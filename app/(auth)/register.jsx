@@ -19,6 +19,7 @@ const Register = () => {
     const handleSignup = async () => {
         const result = await register(username, email, password);
         if(!result.success) Alert.alert("Error", result.error);
+        console.log("Result Is Here", result);
     }
 
     return (
@@ -33,16 +34,18 @@ const Register = () => {
                 <View className='items-center'>
 
                     <TextInput className='bg-gray-300 rounded-full p-4 my-2 w-[90%] h-[52px]' 
-                    placeholder='Enter your Username'/>
+                    placeholder='Enter your Username'
+                    value={username} onChange={setUsername}/>
 
                     <TextInput className='bg-gray-300 rounded-full p-4 my-2 w-[90%] h-[52px]' 
-                    placeholder='Enter your Email'/>
+                    placeholder='Enter your Email' value={email} onChangeText={setEmail}/>
                     
 
                     <View className='w-[90%] ralative'>
                         <TextInput className='bg-gray-300 rounded-full p-4 my-2  h-[52px] ' 
                         placeholder='Enter your Password'
                         onChangeText={setPassword}
+                        value={password}
                         secureTextEntry={!showPassword}
                         />
 
@@ -57,7 +60,7 @@ const Register = () => {
                     <Text className=" text-primary1 font-semibold">Forgot password? </Text>
                 </View>
 
-                <TouchableOpacity  className="items-center " disabled={isLoading} onPress={handleSignup} >
+                <TouchableOpacity  className="items-center " onPress={handleSignup} disabled={isLoading} >
                     {isLoading ? (<ActivityIndicator color='#fff' />) : (<Text className="bg-primary1 text-xl font-bold text-white px-5 py-[12px] w-[90%] text-center m-2 rounded-full ">Sign up</Text>)}
                 </TouchableOpacity>
 

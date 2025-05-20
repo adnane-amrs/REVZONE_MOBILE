@@ -8,9 +8,9 @@ export const useAuthStore = create((set) => ({
     isLoading: false,
     
     register: async (username, email, password) => {
-        set({isLoading: true});
+        set({ isLoading: true });
         try {
-            const response = await fetch('http://192.168.0.104:3000/api/auth/register',{
+            const response = await fetch('http://localhost:3000/api/auth/register',{
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -21,12 +21,15 @@ export const useAuthStore = create((set) => ({
                     password
                 }),
             })
+        
         const data = await response.json();
 
         if(!response.ok) throw new Error(data.message || 'Something went wrong!');
 
         await AsyncStorage.setItem('user', JSON.stringify(data.user));
         await AsyncStorage.setItem('token', data.token);
+
+        console.log("User Is Here", data.user);
 
         set({token: data.token, user:data.user, isLoading: false});
         
