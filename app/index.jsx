@@ -6,12 +6,12 @@ export default function Index(){
     return(
         
         <SafeAreaView className="flex-1">
-            <ImageBackground source={Welcome} resizeMode="cover" className="flex-1 w-[100%] h-[100%] bg-cover pt-[60px] pb-10">
+            <ImageBackground source={Welcome} resizeMode="cover" className="flex-1 w-[100%] h-[100%] bg-cover pt-[65px] pb-10">
                 <View className="flex-1 justify-between"> 
                     <View className="mt-50  px-5 ">
-                        <Text className="text-white text-5xl font-bold ">Welcome to<Text className="text-primary2 "> REVZONE</Text></Text>
+                        <Text className="text-white text-5xl font-bold ">WELCOME TO<Text className="text-primary2 "> REVZONE</Text></Text>
                         <Text className="text-gray-300 text-lg">
-                            A social space for car enthusiasts to connect, share, and celebrate the rides they love.
+                        A social hub where car enthusiasts connect.
                         </Text>
                     </View>
 

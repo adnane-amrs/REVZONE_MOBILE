@@ -1,22 +1,23 @@
 import { Link } from "expo-router";
-import { StyleSheet, TextInput, Text, View, SafeAreaView, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform} from 'react-native';
-import { useState } from 'react';
+import { StyleSheet, TextInput, Text, View, SafeAreaView, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert} from 'react-native';
+import { useState, useEffect } from 'react';
 import Spacer from "../../components/Spacer";
 import {Ionicons} from '@expo/vector-icons'
+import { useAuthStore } from '../../store/authStore';
 
 
 export default function Login(){
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
-
-
-    const [isFocused, setIsFocused] = useState(false);
+    const {user, isLoading, login} = useAuthStore();
     
-    const handleLogin = () => {
-        
+    const handleLogin = async () => {
+        const result = await login(email, password);
+        if(!result.success) Alert.alert("Error", result.error);
+        console.log("Result Is Here", result);
     }
+    
 
     return (
         <SafeAreaView className='flex-1 justify-center'>
@@ -30,7 +31,7 @@ export default function Login(){
                 <View className='items-center'>
 
                     <TextInput className='bg-gray-300 rounded-full p-4 my-2 w-[90%] h-[50px]' 
-                    placeholder='Enter your Email'/>
+                    placeholder='Enter your Email' onChangeText={setEmail} value={email} />
                     
 
                     <View className='w-[90%] ralative'>
@@ -38,6 +39,7 @@ export default function Login(){
                         placeholder='Enter your Password'
                         onChangeText={setPassword}
                         secureTextEntry={!showPassword}
+                        value={password}
                         />
 
                         <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="absolute right-4 bottom-[107px]">
@@ -48,7 +50,7 @@ export default function Login(){
                 </View>
 
                 <View className="items-end mr-6">
-                    <Text className=" text-primary1 font-semibold">Forgot password? </Text>
+                    <Text className=" text-primary1 font-semibold">Forgot password?</Text>
                 </View>
 
                 <TouchableOpacity  className="items-center " disabled={isLoading} onPress={handleLogin} >

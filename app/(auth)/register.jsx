@@ -2,7 +2,7 @@
 import { StyleSheet, TextInput, Text, View, SafeAreaView, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert} from 'react-native';
 import Spacer from '../../components/Spacer'
 import { Link } from "expo-router"
-import { useRouter, useState } from 'react'
+import { useState } from 'react'
 import {Ionicons} from '@expo/vector-icons'
 import { useAuthStore } from '../../store/authStore';
 
@@ -10,14 +10,16 @@ const Register = () => {
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     
     
     const {user, isLoading, register, token} = useAuthStore();
 
     
     const handleSignup = async () => {
-        const result = await register(username, email, password);
+        const result = await register(username, email, password, confirmPassword);
         if(!result.success) Alert.alert("Error", result.error);
         console.log("Result Is Here", result);
     }
@@ -27,7 +29,7 @@ const Register = () => {
             <KeyboardAvoidingView behavior={Platform.OS === 'android' ? 'padding' : 'height'} className='flex-1 justify-center'>
                 <View className='items-center'>
                 <Text className='font-bold text-4xl leading-relaxed'>Create An Account</Text>
-                <Text className='text-gray-600 leading-5 px-10 text-center'>Welcome To <Text className="text-primary1 font-bold">REVZONE</Text> create your account now and Join our community</Text>
+                <Text className='text-gray-600 leading-5 px-10 text-center'>Welcome To <Text className="text-primary1 font-bold">REVZONE</Text> create your account and Join our community now</Text>
                 </View>
                 <Spacer height={30}/>
 
@@ -35,7 +37,7 @@ const Register = () => {
 
                     <TextInput className='bg-gray-300 rounded-full p-4 my-2 w-[90%] h-[52px]' 
                     placeholder='Enter your Username'
-                    value={username} onChange={setUsername}/>
+                    value={username} onChangeText={setUsername}/>
 
                     <TextInput className='bg-gray-300 rounded-full p-4 my-2 w-[90%] h-[52px]' 
                     placeholder='Enter your Email' value={email} onChangeText={setEmail}/>
@@ -54,6 +56,18 @@ const Register = () => {
                         </TouchableOpacity>
                     </View>
 
+                    <View className='w-[90%] ralative'>
+                        <TextInput className='bg-gray-300 rounded-full p-4 my-2  h-[52px] ' 
+                        placeholder='Confirm your Password'
+                        onChangeText={setConfirmPassword}
+                        value={confirmPassword}
+                        secureTextEntry={!showConfirmPassword}
+                        />
+
+                        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 bottom-[107px]">
+                            <Ionicons name={!showConfirmPassword ? 'eye-off' : 'eye'} size={24} color="black" className='top-[89px] text-primary1' />
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 <View className="items-end mr-6">
@@ -83,7 +97,6 @@ const Register = () => {
         </SafeAreaView>
     )
 }
-
 export default Register
 
 const styles = StyleSheet.create({
