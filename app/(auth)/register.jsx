@@ -1,7 +1,6 @@
-
 import { StyleSheet, TextInput, Text, View, SafeAreaView, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert} from 'react-native';
 import Spacer from '../../components/Spacer'
-import { Link } from "expo-router"
+import { Link, useRouter } from "expo-router"
 import { useState } from 'react'
 import {Ionicons} from '@expo/vector-icons'
 import { useAuthStore } from '../../store/authStore';
@@ -16,12 +15,17 @@ const Register = () => {
     
     
     const {user, isLoading, register, token} = useAuthStore();
+    const router = useRouter();
 
     
     const handleSignup = async () => {
         const result = await register(username, email, password, confirmPassword);
-        if(!result.success) Alert.alert("Error", result.error);
-        console.log("Result Is Here", result);
+        if(!result.success) {
+            Alert.alert("Error", result.error);
+        } else {
+            Alert.alert("Success", "Account created successfully! Please login.");
+            router.replace("./login");
+        }
     }
 
     return (
@@ -68,6 +72,13 @@ const Register = () => {
                             <Ionicons name={!showConfirmPassword ? 'eye-off' : 'eye'} size={24} color="black" className='top-[89px] text-primary1' />
                         </TouchableOpacity>
                     </View>
+
+                    {/* <Text className='text-gray-600 text-sm px-4 mt-2'>
+                        Password must be at least 8 characters long and contain:
+                        {'\n'}- At least one letter
+                        {'\n'}- At least one number
+                    </Text> */}
+
                 </View>
 
                 <View className="items-end mr-6">

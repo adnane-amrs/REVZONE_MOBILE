@@ -1,4 +1,4 @@
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { StyleSheet, TextInput, Text, View, SafeAreaView, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert} from 'react-native';
 import { useState, useEffect } from 'react';
 import Spacer from "../../components/Spacer";
@@ -11,11 +11,15 @@ export default function Login(){
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
     const {user, isLoading, login} = useAuthStore();
+    const router = useRouter();
     
     const handleLogin = async () => {
         const result = await login(email, password);
-        if(!result.success) Alert.alert("Error", result.error);
-        console.log("Result Is Here", result);
+        if(!result.success) {
+            Alert.alert("Error", result.error);
+        } else {
+            router.replace("/(dashboard)/profile");
+        }
     }
     
 
