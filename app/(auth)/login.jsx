@@ -18,7 +18,7 @@ export default function Login(){
         if(!result.success) {
             Alert.alert("Error", result.error);
         } else {
-            router.replace("/(dashboard)/profile");
+            router.replace("/(tabs)/profile");
         }
     }
     

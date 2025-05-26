@@ -1,19 +1,21 @@
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, Image } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native'
 import { useAuthStore } from '../../store/authStore';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Profile = () => {
     const { user, logout } = useAuthStore();
     const router = useRouter();
+    const insets = useSafeAreaInsets();
 
     const handleLogout = async () => {
         await logout();
-        router.replace("/");
+        router.replace('/(auth)/login');
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
-            <View className="flex-1 p-4">
+        <View className="flex-1 bg-white">
+            <View className="flex-1 p-4" style={{ paddingTop: insets.top }}>
                 <View className="items-center mt-8">
                     <Image 
                         source={{ uri: user?.profileImage }} 
@@ -32,7 +34,7 @@ const Profile = () => {
                     </TouchableOpacity>
                 </View>
             </View>
-        </SafeAreaView>
+        </View>
     )
 }
 
