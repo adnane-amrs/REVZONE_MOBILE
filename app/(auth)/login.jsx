@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Spacer from "../../components/Spacer";
 import {Ionicons} from '@expo/vector-icons'
 import { useAuthStore } from '../../store/authStore';
-
+import { Colors } from "../../constants/Colors";
 
 export default function Login(){
     const [email, setEmail] = useState('')
@@ -14,10 +14,13 @@ export default function Login(){
     const router = useRouter();
     
     const handleLogin = async () => {
+        console.log("Attempting login with email:", email);
         const result = await login(email, password);
+        console.log("Login result:", result);
         if(!result.success) {
             Alert.alert("Error", result.error);
         } else {
+            console.log("Login successful, navigating to profile");
             router.replace("/(tabs)/profile");
         }
     }
@@ -34,21 +37,32 @@ export default function Login(){
 
                 <View className='items-center'>
 
-                    <TextInput className='bg-gray-300 rounded-full p-4 my-2 w-[90%] h-[50px]' 
-                    placeholder='Enter your Email' onChangeText={setEmail} value={email} />
-                    
+                    <View className='w-[90%]'>
+                        <View className='flex-row items-center bg-gray-300/70 rounded-md py-1'>
+                            <Ionicons name="mail-outline" size={24} color="#4042e2" style={{ marginLeft: 10 }} />
+                            <TextInput 
+                                className='p-4 flex-1' 
+                                placeholder='Enter your Email' 
+                                onChangeText={setEmail} 
+                                value={email} 
+                            />
+                        </View>
+                    </View>
 
-                    <View className='w-[90%] ralative'>
-                        <TextInput className='bg-gray-300 rounded-full p-4 my-2  h-[50px] ' 
-                        placeholder='Enter your Password'
-                        onChangeText={setPassword}
-                        secureTextEntry={!showPassword}
-                        value={password}
-                        />
-
-                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="absolute right-4 bottom-[107px]">
-                            <Ionicons name={!showPassword ? 'eye-off' : 'eye'} size={24} color="black" className='top-[89px] text-primary1' />
-                        </TouchableOpacity>
+                    <View className='w-[90%] mt-5'>
+                        <View className='flex-row items-center bg-gray-300/70 rounded-md py-1'>
+                            <Ionicons name="lock-closed-outline" size={24} color="#4042e2" style={{ marginLeft: 10 }} />
+                            <TextInput 
+                                className='p-4 flex-1' 
+                                placeholder='Enter your Password'
+                                onChangeText={setPassword}
+                                secureTextEntry={!showPassword}
+                                value={password}
+                            />
+                            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="mr-4">
+                                <Ionicons name={!showPassword ? 'eye-off' : 'eye'} size={24} color="#4042e2" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
 
                 </View>
@@ -58,8 +72,18 @@ export default function Login(){
                 </View>
 
                 <TouchableOpacity  className="items-center " disabled={isLoading} onPress={handleLogin} >
-                    {isLoading ? (<ActivityIndicator color='#fff' />) : (<Text className="bg-primary1 text-xl font-bold text-white px-5 py-[12px] w-[90%] text-center m-2 rounded-full ">Login</Text>)}
-                    
+                {isLoading ? (
+                    <View className="bg-primary1 text-xl font-bold text-white px-5 py-[12px] w-[90%] text-center m-2 rounded-md">
+                        <ActivityIndicator color={Colors.secondary2} />
+                    </View>
+                ) : (
+                    <View className="bg-primary1 text-xl font-bold text-white px-5 py-[12px] w-[90%] text-center m-2 rounded-md">
+                        <View className='flex-row items-center justify-center'>
+                            <Ionicons name='log-in-outline' size={24} color={Colors.secondary2} />
+                            <Text className='text-white text-center text-lg font-bold'>  Login</Text>
+                        </View>
+                    </View>
+                )}
                 </TouchableOpacity>
 
                 <Spacer height={10}/>

@@ -4,6 +4,7 @@ import { Link, useRouter } from "expo-router"
 import { useState } from 'react'
 import {Ionicons} from '@expo/vector-icons'
 import { useAuthStore } from '../../store/authStore';
+import { Colors } from '../../constants/Colors';
 
 const Register = () => {
     const [username, setUsername] = useState('')
@@ -19,12 +20,30 @@ const Register = () => {
 
     
     const handleSignup = async () => {
+        if (!username || !email || !password || !confirmPassword) {
+            Alert.alert("Error", "Please fill in all fields");
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            Alert.alert("Error", "Passwords do not match");
+            return;
+        }
+
         const result = await register(username, email, password, confirmPassword);
         if(!result.success) {
             Alert.alert("Error", result.error);
         } else {
-            Alert.alert("Success", "Account created successfully! Please login.");
-            router.replace("./login");
+            Alert.alert(
+                "Success", 
+                "Account created successfully! Please login.",
+                [
+                    {
+                        text: "OK",
+                        onPress: () => router.replace("./login")
+                    }
+                ]
+            );
         }
     }
 
@@ -39,45 +58,61 @@ const Register = () => {
 
                 <View className='items-center'>
 
-                    <TextInput className='bg-gray-300 rounded-full p-4 my-2 w-[90%] h-[52px]' 
-                    placeholder='Enter your Username'
-                    value={username} onChangeText={setUsername}/>
-
-                    <TextInput className='bg-gray-300 rounded-full p-4 my-2 w-[90%] h-[52px]' 
-                    placeholder='Enter your Email' value={email} onChangeText={setEmail}/>
-                    
-
-                    <View className='w-[90%] ralative'>
-                        <TextInput className='bg-gray-300 rounded-full p-4 my-2  h-[52px] ' 
-                        placeholder='Enter your Password'
-                        onChangeText={setPassword}
-                        value={password}
-                        secureTextEntry={!showPassword}
-                        />
-
-                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="absolute right-4 bottom-[107px]">
-                            <Ionicons name={!showPassword ? 'eye-off' : 'eye'} size={24} color="black" className='top-[89px] text-primary1' />
-                        </TouchableOpacity>
+                    <View className='w-[90%]'>
+                        <View className='flex-row items-center bg-gray-300/70 rounded-md py-1'>
+                            <Ionicons name="person-outline" size={24} color="#4042e2" style={{ marginLeft: 10 }} />
+                            <TextInput 
+                                className='p-4 flex-1' 
+                                placeholder='Enter your Username'
+                                value={username} 
+                                onChangeText={setUsername}
+                            />
+                        </View>
                     </View>
 
-                    <View className='w-[90%] ralative'>
-                        <TextInput className='bg-gray-300 rounded-full p-4 my-2  h-[52px] ' 
-                        placeholder='Confirm your Password'
-                        onChangeText={setConfirmPassword}
-                        value={confirmPassword}
-                        secureTextEntry={!showConfirmPassword}
-                        />
-
-                        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 bottom-[107px]">
-                            <Ionicons name={!showConfirmPassword ? 'eye-off' : 'eye'} size={24} color="black" className='top-[89px] text-primary1' />
-                        </TouchableOpacity>
+                    <View className='w-[90%] mt-5'>
+                        <View className='flex-row items-center bg-gray-300/70 rounded-md py-1'>
+                            <Ionicons name="mail-outline" size={24} color="#4042e2" style={{ marginLeft: 10 }} />
+                            <TextInput 
+                                className='p-4 flex-1' 
+                                placeholder='Enter your Email' 
+                                value={email} 
+                                onChangeText={setEmail}
+                            />
+                        </View>
                     </View>
 
-                    {/* <Text className='text-gray-600 text-sm px-4 mt-2'>
-                        Password must be at least 8 characters long and contain:
-                        {'\n'}- At least one letter
-                        {'\n'}- At least one number
-                    </Text> */}
+                    <View className='w-[90%] mt-5'>
+                        <View className='flex-row items-center bg-gray-300/70 rounded-md py-1'>
+                            <Ionicons name="lock-closed-outline" size={24} color="#4042e2" style={{ marginLeft: 10 }} />
+                            <TextInput 
+                                className='p-4 flex-1' 
+                                placeholder='Enter your Password'
+                                onChangeText={setPassword}
+                                value={password}
+                                secureTextEntry={!showPassword}
+                            />
+                            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="mr-4">
+                                <Ionicons name={!showPassword ? 'eye-off' : 'eye'} size={24} color="gray" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    <View className='w-[90%] mt-5'>
+                        <View className='flex-row items-center bg-gray-300/70 rounded-md py-1'>
+                            <Ionicons name="lock-closed-outline" size={24} color="#4042e2" style={{ marginLeft: 10 }} />
+                            <TextInput 
+                                className='p-4 flex-1' 
+                                placeholder='Confirm your Password'
+                                onChangeText={setConfirmPassword}
+                                value={confirmPassword}
+                                secureTextEntry={!showConfirmPassword}
+                            />
+                            <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} className="mr-4">
+                                <Ionicons name={!showConfirmPassword ? 'eye-off' : 'eye'} size={24} color="gray" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
 
                 </View>
 
@@ -85,8 +120,21 @@ const Register = () => {
                     <Text className=" text-primary1 font-semibold">Forgot password? </Text>
                 </View>
 
+                
+
                 <TouchableOpacity  className="items-center " onPress={handleSignup} disabled={isLoading} >
-                    {isLoading ? (<ActivityIndicator color='#fff' />) : (<Text className="bg-primary1 text-xl font-bold text-white px-5 py-[12px] w-[90%] text-center m-2 rounded-full ">Sign up</Text>)}
+                {isLoading ? (
+                    <View className="bg-primary1 text-xl font-bold text-white px-5 py-[12px] w-[90%] text-center m-2 rounded-md">
+                        <ActivityIndicator color={Colors.secondary2} />
+                    </View>
+                ) : (
+                    <View className="bg-primary1 text-xl font-bold text-white px-5 py-[12px] w-[90%] text-center m-2 rounded-md">
+                        <View className='flex-row items-center justify-center'>
+                            <Ionicons name='person-add-outline' size={22} color={Colors.secondary2} />
+                            <Text className='text-white text-center text-lg font-bold'>  Sign up</Text>
+                        </View>
+                    </View>
+                )}
                 </TouchableOpacity>
 
                 <Spacer height={10}/>

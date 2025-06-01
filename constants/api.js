@@ -1,0 +1,1 @@
+export const API_URL = 'https://revzone-backend.onrender.com/api';

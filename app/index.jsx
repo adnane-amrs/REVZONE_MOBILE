@@ -31,10 +31,10 @@ export default function Index(){
                         ) : (
                             <>
                                 <Link href="/(auth)/login" className="bg-primary1 text-xl font-bold text-white px-5 py-4 w-[90%] text-center m-2 rounded-full">
-                                    Login
+                                    LOGIN
                                 </Link>
-                                <Link href="/(auth)/register" className="bg-white text-xl font-bold text-primary1 px-5 py-4 w-[90%] text-center rounded-full">
-                                    Create an Account
+                                <Link href="/(auth)/register" className="bg-white text-xl font-bold text-dark px-5 py-4 w-[90%] text-center rounded-full">
+                                    CREATE AN ACCOUNT
                                 </Link>
                             </>
                         )}

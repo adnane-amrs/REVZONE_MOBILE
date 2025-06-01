@@ -162,10 +162,10 @@ import { Ionicons } from '@expo/vector-icons';
     };
 
     return (
-        <View className="flex-1 bg-gray-50">
+        <View className="flex-1 bg-secondary1/15">
             {/* Header */}
-            <View className="bg-white py-4 px-5 border-b border-gray-200 items-center" style={{ paddingTop: insets.top }}>
-                <Text className="text-xl font-bold text-gray-900">Feed</Text>
+            <View className="bg-dark py-4 px-5 border-b border-gray-200 items-center " style={{ paddingTop: insets.top }}>
+                <Text className="text-xl font-bold text-white">REVZONE</Text>
             </View>
 
             {/* Feed */}
