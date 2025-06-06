@@ -3,13 +3,13 @@ import { useAuthStore } from '../../store/authStore';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect } from 'react';
-
+import { useEffect, useState } from 'react';
 
 const Profile = () => {
     const { user, logout } = useAuthStore();
     const router = useRouter();
     const insets = useSafeAreaInsets();
+    const [imageError, setImageError] = useState(false);
 
     // Debug logs
     console.log("User data:", user);
@@ -21,9 +21,19 @@ const Profile = () => {
         router.replace('/(auth)/login');
     }
 
-    // Default avatar URL from DiceBear API
-    const defaultAvatar = `https://api.dicebear.com/9.x/lorelei/svg?seed=${user?.username || 'default'}`;
-    console.log("Default avatar URL:", defaultAvatar);
+    // Default avatar URL from DiceBear API using PNG format
+    const defaultAvatar = `https://api.dicebear.com/9.x/initials/png?seed=${user?.username || 'default'}`;
+
+    const handleImageError = (e) => {
+        console.log("Image loading error:", e.nativeEvent.error);
+        console.log("Attempted URL:", user?.profileImage || defaultAvatar);
+        setImageError(true);
+    }
+
+    // Reset image error state when user changes
+    useEffect(() => {
+        setImageError(false);
+    }, [user]);
 
     return (
         <View className="flex-1 bg-white">
@@ -31,12 +41,13 @@ const Profile = () => {
                 <View className="items-center mt-8">
                     <View className="relative">
                         <Image 
-                            source={{ uri: user?.profileImage || defaultAvatar }} 
-                            className="w-32 h-32 rounded-full"
-                            onError={(e) => {
-                                console.log("Image loading error:", e.nativeEvent.error);
-                                console.log("Attempted URL:", user?.profileImage || defaultAvatar);
-                            }}
+                            source={{ 
+                                uri: imageError ? defaultAvatar : (user?.profileImage || defaultAvatar),
+                                cache: 'reload'
+                            }} 
+                            className="w-32 h-32 rounded-full bg-gray-200"
+                            style={{ resizeMode: 'cover' }}
+                            onError={handleImageError}
                         />
                         {!user?.profileImage && (
                             <View className="absolute bottom-0 right-0 bg-primary1 p-2 rounded-full">

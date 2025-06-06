@@ -5,24 +5,35 @@ import {
     ScrollView,
     TouchableOpacity,
     SafeAreaView,
+    Image,
     FlatList,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../store/authStore';
 import { API_URL } from '../../constants/api';
-import { Image } from 'expo-image';
 
 const SocialFeed = () => {
     const insets = useSafeAreaInsets();
-
-
+    const { user } = useAuthStore();
     const {token} = useAuthStore()
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
     const [page, setPage] = useState(1)
     const [hasMore, setHasMore] = useState(true)
+    const [imageErrors, setImageErrors] = useState({});
+
+    const getDefaultAvatar = (username) => {
+        return `https://api.dicebear.com/9.x/initials/png?seed=${username || 'default'}`;
+    }
+
+    const handleImageError = (userId) => {
+        setImageErrors(prev => ({
+            ...prev,
+            [userId]: true
+        }));
+    }
 
     const fetchPosts = async(pageNum=1, refresh=false) => {
         try {
@@ -93,9 +104,13 @@ const SocialFeed = () => {
                 {/* Header */}
                 <View className="flex-row p-4 items-center justify-center">
                     <Image 
-                        source={{ uri: item.user.profileImage || `https://api.dicebear.com/9.x/personas/svg?seed=${item.user.username}` }} 
-                        className="w-12 h-12 rounded-full mr-3 bg-red-400"
-                        onError={(error) => console.log("Profile image error:", error.nativeEvent.error)}
+                        source={{ 
+                            uri: imageErrors[item.user._id] ? getDefaultAvatar(item.user.username) : (item.user.profileImage || getDefaultAvatar(item.user.username)),
+                            cache: 'reload'
+                        }} 
+                        className="w-12 h-12 rounded-full mr-3 bg-gray-200"
+                        style={{ resizeMode: 'cover' }}
+                        onError={() => handleImageError(item.user._id)}
                     />
                     <View className="flex-1">
                         <Text className="text-base font-semibold text-gray-900">

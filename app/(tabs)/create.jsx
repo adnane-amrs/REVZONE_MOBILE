@@ -204,7 +204,7 @@ const Create = () => {
     return (
         <KeyboardAvoidingView behavior={Platform.OS === 'android' ? 'padding' : 'height'} className='flex-1 bg-secondary1/15'>
 
-            <View className='flex-1' style={{ paddingTop: insets.top }}>
+            <View className='flex-1' >
                 <ScrollView 
                     contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}
                     keyboardShouldPersistTaps="handled"
