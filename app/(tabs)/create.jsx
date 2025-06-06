@@ -42,30 +42,19 @@ const Create = () => {
 
         try {
             setIsLoading(true);
-            const uriParts = image.split(',');
-            const fileType = uriParts[uriParts.length - 1];
-            const imageType = fileType ? `image/${fileType.toLowerCase()}` : 'image/jpeg';
             
-            const imageDataUrl = `data:${imageType};base64,${image64}`;
+            // Prepare image for Cloudinary
+            let base64Image = image64;
+            // Remove any existing data URL prefix
+            if (base64Image.includes('base64,')) {
+                base64Image = base64Image.split('base64,')[1];
+            }
 
-            // Log the full token for debugging
-            console.log("Token being used:", token);
-            console.log("Token length:", token.length);
-            console.log("Token format check:", token.split('.').length === 3 ? "Valid JWT format" : "Invalid JWT format");
+            // Add proper data URL prefix for Cloudinary
+            const imageDataUrl = `data:image/jpeg;base64,${base64Image}`;
 
             console.log("Making request to:", `${API_URL}/cars`);
-            console.log("Request headers:", {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            });
-
-            // First, try to verify the API is accessible
-            try {
-                const healthCheck = await fetch(`${API_URL}/health`);
-                console.log("API health check status:", healthCheck.status);
-            } catch (error) {
-                console.log("API health check failed:", error);
-            }
+            console.log("Image data length:", imageDataUrl.length);
 
             const response = await fetch(`${API_URL}/cars`, {
                 method: 'POST',
@@ -160,7 +149,7 @@ const Create = () => {
                                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                                 allowsEditing: true,
                                 aspect: [4, 3],
-                                quality: 0.5,
+                                quality: 0.7,  // Increased quality for better image
                                 base64: true,
                             });
                             handleImageResult(result);
@@ -173,7 +162,7 @@ const Create = () => {
                                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                                 allowsEditing: true,
                                 aspect: [4, 3],
-                                quality: 0.5,
+                                quality: 0.7,  // Increased quality for better image
                                 base64: true,
                             });
                             handleImageResult(result);
@@ -194,15 +183,20 @@ const Create = () => {
     const handleImageResult = async (result) => {
         if (!result.canceled) {
             setImage(result.assets[0].uri);
-
+            
             if (result.assets[0].base64) {
                 setImage64(result.assets[0].base64);
             } else {
-                // otherwise, convert the image to base64
-                const base64 = await FileSystem.readAsStringAsync(result.assets[0].uri, {
-                    encoding: FileSystem.EncodingType.Base64
-                });
-                setImage64(base64);
+                // Convert the image to base64 if not already provided
+                try {
+                    const base64 = await FileSystem.readAsStringAsync(result.assets[0].uri, {
+                        encoding: FileSystem.EncodingType.Base64
+                    });
+                    setImage64(base64);
+                } catch (error) {
+                    console.log("Error converting image to base64:", error);
+                    Alert.alert("Error", "Failed to process image. Please try again.");
+                }
             }
         }
     }
