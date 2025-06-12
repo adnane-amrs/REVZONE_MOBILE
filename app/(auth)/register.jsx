@@ -1,10 +1,11 @@
-import { StyleSheet, TextInput, Text, View, SafeAreaView, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert} from 'react-native';
+import { StyleSheet, TextInput, Text, View, SafeAreaView, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Image} from 'react-native';
 import Spacer from '../../components/Spacer'
 import { Link, useRouter } from "expo-router"
 import { useState } from 'react'
 import {Ionicons} from '@expo/vector-icons'
 import { useAuthStore } from '../../store/authStore';
 import { Colors } from '../../constants/Colors';
+
 
 const Register = () => {
     const [username, setUsername] = useState('')
@@ -48,18 +49,25 @@ const Register = () => {
     }
 
     return (
-        <SafeAreaView className='flex-1 justify-center'>
+        <SafeAreaView className='flex-1 justify-center bg-white'>
             <KeyboardAvoidingView behavior={Platform.OS === 'android' ? 'padding' : 'height'} className='flex-1 justify-center'>
                 <View className='items-center'>
-                <Text className='font-bold text-4xl leading-relaxed'>Create An Account</Text>
-                <Text className='text-gray-600 leading-5 px-10 text-center'>Welcome To <Text className="text-primary1 font-bold">REVZONE</Text> create your account and Join our community now</Text>
+                    <Image 
+                        source={require('../../assets/images/REVZONE.png')} // Adjust the path as necessary
+                        alt='RevZone Logo'
+                        width={20}
+                        height={20} 
+                        className='w-64 h-48 bg-transparent' // Adjust size as needed
+                    />
+                    <Text className='font-bold text-4xl leading-relaxed'>Create An Account</Text>
+                    <Text className='text-gray-600 leading-5 px-10 text-center'>Welcome To <Text className="text-primary1 font-bold">REVZONE</Text> create your account and Join our community now</Text>
                 </View>
                 <Spacer height={30}/>
 
                 <View className='items-center'>
 
                     <View className='w-[90%]'>
-                        <View className='flex-row items-center bg-gray-300/70 rounded-md py-1'>
+                        <View className='flex-row items-center bg-gray-200 rounded-md py-1'>
                             <Ionicons name="person-outline" size={24} color="#4042e2" style={{ marginLeft: 10 }} />
                             <TextInput 
                                 className='p-4 flex-1' 
@@ -71,7 +79,7 @@ const Register = () => {
                     </View>
 
                     <View className='w-[90%] mt-5'>
-                        <View className='flex-row items-center bg-gray-300/70 rounded-md py-1'>
+                        <View className='flex-row items-center bg-gray-200 rounded-md py-1'>
                             <Ionicons name="mail-outline" size={24} color="#4042e2" style={{ marginLeft: 10 }} />
                             <TextInput 
                                 className='p-4 flex-1' 
@@ -83,7 +91,7 @@ const Register = () => {
                     </View>
 
                     <View className='w-[90%] mt-5'>
-                        <View className='flex-row items-center bg-gray-300/70 rounded-md py-1'>
+                        <View className='flex-row items-center bg-gray-200 rounded-md py-1'>
                             <Ionicons name="lock-closed-outline" size={24} color="#4042e2" style={{ marginLeft: 10 }} />
                             <TextInput 
                                 className='p-4 flex-1' 
@@ -99,7 +107,7 @@ const Register = () => {
                     </View>
 
                     <View className='w-[90%] mt-5'>
-                        <View className='flex-row items-center bg-gray-300/70 rounded-md py-1'>
+                        <View className='flex-row items-center bg-gray-200 rounded-md py-1'>
                             <Ionicons name="lock-closed-outline" size={24} color="#4042e2" style={{ marginLeft: 10 }} />
                             <TextInput 
                                 className='p-4 flex-1' 
