@@ -58,6 +58,7 @@ export const useAuthStore = create((set) => ({
             console.log("Login response data:", data);
             console.log("User data from response:", data.user);
             console.log("Profile image URL from response:", data.user?.profileImage);
+            console.log("Post count from response:", data.user?.postCount);
 
             if(!response.ok) throw new Error(data.message || 'Something went wrong!');
 

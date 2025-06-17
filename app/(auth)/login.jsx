@@ -6,14 +6,24 @@ import {Ionicons} from '@expo/vector-icons'
 import { useAuthStore } from '../../store/authStore';
 import { Colors } from "../../constants/Colors";
 import {logo} from '../../assets/images/REVZONE.png'; // Adjust the path as necessary
+import * as LocalAuthentication from 'expo-local-authentication';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Login(){
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
+    const [isBiometricSupported, setIsBiometricSupported] = useState(false)
     const {user, isLoading, login} = useAuthStore();
     const router = useRouter();
     
+    useEffect(() => {
+        (async () => {
+            const compatible = await LocalAuthentication.hasHardwareAsync();
+            setIsBiometricSupported(compatible);
+        })();
+    }, []);
+
     const handleLogin = async () => {
         console.log("Attempting login with email:", email);
         const result = await login(email, password);
@@ -22,10 +32,41 @@ export default function Login(){
             Alert.alert("Error", result.error);
         } else {
             console.log("Login successful, navigating to profile");
+            await AsyncStorage.setItem('userCredentials', JSON.stringify({ email, password }));
             router.replace("/(tabs)/profile");
         }
     }
-    
+
+    const handleBiometricAuth = async () => {
+        try {
+            const savedCredentials = await AsyncStorage.getItem('userCredentials');
+            if (!savedCredentials) {
+                Alert.alert('No saved credentials', 'Please login with email and password first');
+                return;
+            }
+
+            const { email, password } = JSON.parse(savedCredentials);
+            
+            const result = await LocalAuthentication.authenticateAsync({
+                promptMessage: 'Authenticate to login',
+                fallbackLabel: 'Use password',
+                disableDeviceFallback: false,
+            });
+
+            if (result.success) {
+                const loginResult = await login(email, password);
+                if (loginResult.success) {
+                    await AsyncStorage.setItem('userCredentials', JSON.stringify({ email, password }));
+                    router.replace("/(tabs)/profile");
+                } else {
+                    Alert.alert("Error", loginResult.error);
+                }
+            }
+        } catch (error) {
+            console.error('Biometric auth error:', error);
+            Alert.alert('Error', 'Biometric authentication failed');
+        }
+    };
 
     return (
         <SafeAreaView className='flex-1 justify-center bg-white'>
@@ -41,7 +82,7 @@ export default function Login(){
                         className='w-64 h-52 bg-transparent' // Adjust size as needed
                     />
                     <Text className='font-bold text-4xl'>Sign In Your Account</Text>
-                    <Text className='text-lg text-gray-700'>Log in to your account</Text>
+                    <Text className='text-gray-600 leading-5 px-10 text-center text-lg'>Log in to your account</Text>
                 </View>
                 <Spacer height={30}/>
 
@@ -96,8 +137,6 @@ export default function Login(){
                 )}
                 </TouchableOpacity>
 
-                <Spacer height={10}/>
-
                 <View className="flex-row gap-2 justify-center items-center">
                     <Text className='text-lg'>Do not Have an Account?</Text>
                     <Link href='./register' asChild>
@@ -106,6 +145,18 @@ export default function Login(){
                         </TouchableOpacity>
                     </Link>
                 </View>
+                
+                {isBiometricSupported && (
+                    <View className="items-center mt-2">
+                        <TouchableOpacity 
+                            onPress={handleBiometricAuth}
+                            className="px-4 py-[12px] rounded-md flex-row items-center justify-center w-fit"
+                        >
+                            <Ionicons name="finger-print" size={70} color="#0E2148" />
+                            
+                        </TouchableOpacity>
+                    </View>
+                )}
                 
             </KeyboardAvoidingView>
             {/* Footer */}
