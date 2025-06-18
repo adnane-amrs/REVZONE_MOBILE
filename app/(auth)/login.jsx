@@ -25,13 +25,10 @@ export default function Login(){
     }, []);
 
     const handleLogin = async () => {
-        console.log("Attempting login with email:", email);
         const result = await login(email, password);
-        console.log("Login result:", result);
         if(!result.success) {
             Alert.alert("Error", result.error);
         } else {
-            console.log("Login successful, navigating to profile");
             await AsyncStorage.setItem('userCredentials', JSON.stringify({ email, password }));
             router.replace("/(tabs)/profile");
         }
@@ -63,7 +60,6 @@ export default function Login(){
                 }
             }
         } catch (error) {
-            console.error('Biometric auth error:', error);
             Alert.alert('Error', 'Biometric authentication failed');
         }
     };

@@ -71,14 +71,13 @@ const SocialFeed = () => {
             }
 
             const data = await response.json();
-            console.log("API Response:", JSON.stringify(data, null, 2));
             
             if (refresh || pageNum === 1) {
                 setPosts(data.cars || []);
                 // Initialize likedPosts state with the isLiked status from the backend
                 const initialLikedPosts = {};
                 data.cars.forEach(car => {
-                    initialLikedPosts[car._id] = car.isLiked;
+                    initialLikedPosts[car._id] = car.isLiked || false;
                 });
                 setLikedPosts(initialLikedPosts);
             } else {
@@ -86,7 +85,7 @@ const SocialFeed = () => {
                 // Update likedPosts state for new posts
                 const newLikedPosts = {};
                 data.cars.forEach(car => {
-                    newLikedPosts[car._id] = car.isLiked;
+                    newLikedPosts[car._id] = car.isLiked || false;
                 });
                 setLikedPosts(prev => ({...prev, ...newLikedPosts}));
             }
@@ -102,8 +101,9 @@ const SocialFeed = () => {
             if (refresh) {
                 await sleep(800);
                 setRefreshing(false);
+            } else if (pageNum === 1) {
+                setLoading(false);
             }
-            else setLoading(false);
         }
     }
 
@@ -259,9 +259,6 @@ const SocialFeed = () => {
     };
 
     const renderItem = ({ item }) => {
-        console.log("Rendering item:", item); // Debug log
-        console.log("Image URL:", item.image); // Debug log for image URL
-
         return (
             <View className="bg-white mx-4 my-3 rounded-2xl shadow-sm overflow-hidden">
                 {/* Header */}
@@ -328,9 +325,8 @@ const SocialFeed = () => {
                         className="w-full h-full"
                         contentFit="cover"
                         transition={200}
-                        onError={(error) => {
-                            console.log("Post image error:", error.nativeEvent.error);
-                            console.log("Failed image URL:", item.image);
+                        onError={() => {
+                            // Handle image error silently
                         }}
                     />
                 </View>

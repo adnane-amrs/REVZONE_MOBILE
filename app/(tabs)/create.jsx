@@ -59,29 +59,18 @@ const Create = () => {
             const response = await fetch(`${API_URL}/cars`, {
                 method: 'POST',
                 headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     title,
                     caption,
-                    rate: rating.toString(),
-                    image: imageDataUrl,
+                    rate: rating,
+                    image: image64
                 }),
             });
 
-            console.log("Response status:", response.status);
-            const responseText = await response.text();
-            console.log("Raw response:", responseText);
-
-            let data;
-            try {
-                data = JSON.parse(responseText);
-                console.log("Parsed response data:", data);
-            } catch (parseError) {
-                console.log("Failed to parse response as JSON:", parseError);
-                throw new Error(`Server returned invalid JSON: ${responseText.substring(0, 100)}...`);
-            }
+            const data = await response.json();
 
             if(!response.ok) {
                 if (response.status === 401) {
@@ -113,7 +102,6 @@ const Create = () => {
             router.push('/');
 
         } catch (error) {
-            console.log("Error creating post:", error);
             Alert.alert("Error", error.message);
         } finally {
             setIsLoading(false);
