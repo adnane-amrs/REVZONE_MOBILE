@@ -25,6 +25,25 @@ export default function Login(){
     }, []);
 
     const handleLogin = async () => {
+        // Validation des champs vides
+        if (!email.trim() || !password.trim()) {
+            Alert.alert("Error", "Please fill in all fields");
+            return;
+        }
+
+        // Validation du format email
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(email)) {
+            Alert.alert("Error", "Please enter a valid email address");
+            return;
+        }
+
+        // Validation de la longueur du mot de passe
+        if (password.length < 6) {
+            Alert.alert("Error", "Password must contain at least 6 characters");
+            return;
+        }
+
         const result = await login(email, password);
         if(!result.success) {
             Alert.alert("Error", result.error);

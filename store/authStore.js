@@ -77,7 +77,6 @@ export const useAuthStore = create((set) => ({
         }
     },
 
-
     checkAuth: async () => {
         try {
             const token = await AsyncStorage.getItem('token');
@@ -103,7 +102,6 @@ export const useAuthStore = create((set) => ({
             set({token: null, user: null});
         }
     },
-
 
     // Logout function
     logout: async () => {

@@ -7,7 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 const RootLayout = () => {
     const router = useRouter();
     const segments = useSegments();
-    const {checkAuth, user, token} = useAuthStore();
+    const { checkAuth, user, token } = useAuthStore();
     const [isReady, setIsReady] = useState(false);
 
     useEffect(() => {
@@ -21,32 +21,57 @@ const RootLayout = () => {
     useEffect(() => {
         if (!isReady) return;
 
-        const inAuthScreen = segments[0] === '(auth)';
-        const inWelcomeScreen = segments[0] === 'index';
-        const isSignedIn = user && token;
+        const isSignedIn = !!user && !!token;
+        const isAdmin = user?.role === 'admin';
 
-        if (isSignedIn && (inAuthScreen || inWelcomeScreen)) {
-            router.replace('/(tabs)/index');
-        } else if (!isSignedIn && !inAuthScreen && !inWelcomeScreen) {
-            router.replace('/');
+        // Get the current location (e.g., '(auth)', '(tabs)', '(admin)')
+        const inAuthGroup = segments[0] === '(auth)';
+        const inTabsGroup = segments[0] === '(tabs)';
+        const inAdminGroup = segments[0] === '(admin)';
+        const isAtRoot = segments.length === 0 || segments[0] === 'index';
+        
+        // --- NEW, MORE ROBUST LOGIC ---
+
+        if (isSignedIn) {
+            if (isAdmin) {
+                // If admin is NOT in the admin area, force them there.
+                if (!inAdminGroup) {
+                    router.replace('/(admin)/dashboard');
+                }
+            } else {
+                // If a regular user is in the admin area, kick them out.
+                if (inAdminGroup) {
+                    router.replace('/(tabs)/index');
+                }
+                // If a regular user is on the login/welcome screen, send to tabs.
+                else if (inAuthGroup || isAtRoot) {
+                    router.replace('/(tabs)/index');
+                }
+            }
+        } else {
+            // If not signed in, they should be on the auth or welcome screen.
+            // If they are anywhere else, redirect them to the welcome screen.
+            if (!inAuthGroup && !isAtRoot) {
+                router.replace('/');
+            }
         }
-    }, [user, token, segments, isReady]);
+
+    }, [user, token, segments, isReady, router]);
 
     if (!isReady) {
-        return null; // or a loading screen if you prefer
+        return null; // or a loading screen
     }
 
     return (
         <SafeAreaProvider>
-            <Stack screenOptions={{
-                headerShown: false,
-            }}>
-                <Stack.Screen name='index' options={{ headerShown: false }}/>
-                <Stack.Screen name='(tabs)' options={{headerShown: false}}/>
-                <Stack.Screen name='(auth)' options={{ headerShown: false }}/>
+            <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name='index' />
+                <Stack.Screen name='(tabs)' />
+                <Stack.Screen name='(auth)' />
+                <Stack.Screen name='(admin)' />
             </Stack>
         </SafeAreaProvider>
-    )
+    );
 }
 
 export default RootLayout;

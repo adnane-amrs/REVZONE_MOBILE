@@ -21,11 +21,43 @@ const Register = () => {
 
     
     const handleSignup = async () => {
-        if (!username || !email || !password || !confirmPassword) {
+        // Validation des champs vides
+        if (!username.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
             Alert.alert("Error", "Please fill in all fields");
             return;
         }
 
+        // Validation du nom d'utilisateur
+        if (username.length < 3) {
+            Alert.alert("Error", "Username must contain at least 3 characters");
+            return;
+        }
+
+        if (username.length > 20) {
+            Alert.alert("Error", "Username cannot exceed 20 characters");
+            return;
+        }
+
+        // Validation du format email
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(email)) {
+            Alert.alert("Error", "Please enter a valid email address");
+            return;
+        }
+
+        // Validation de la force du mot de passe
+        if (password.length < 8) {
+            Alert.alert("Error", "Password must contain at least 8 characters");
+            return;
+        }
+
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!passwordRegex.test(password)) {
+            Alert.alert("Error", "Password must contain at least one letter and one number");
+            return;
+        }
+
+        // Validation de la correspondance des mots de passe
         if (password !== confirmPassword) {
             Alert.alert("Error", "Passwords do not match");
             return;
@@ -123,12 +155,6 @@ const Register = () => {
                     </View>
 
                 </View>
-
-                <View className="items-end mr-6">
-                    <Text className=" text-primary1 font-semibold">Forgot password? </Text>
-                </View>
-
-                
 
                 <TouchableOpacity  className="items-center " onPress={handleSignup} disabled={isLoading} >
                 {isLoading ? (

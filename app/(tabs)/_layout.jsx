@@ -89,6 +89,23 @@ const TabsLayout = () => {
                     )
                 }}
             />
+            <Tabs.Screen 
+                name='edit' 
+                options={{
+                    href: null, // This hides the tab from the tab bar
+                    tabBarIcon: ({focused}) => (
+                        <View className="flex items-center justify-center">
+                            <View className={`flex items-center justify-center w-10 h-10 text-white rounded-full ${focused ? 'bg-primary1' : 'bg-transparent'}`}>
+                                <Ionicons 
+                                    size={24}
+                                    name={focused ? 'create' : 'create-outline'}
+                                    color={focused ? AppColors.secondary2 : AppColors.secondary1}
+                                />
+                            </View>
+                        </View>
+                    )
+                }}
+            />
         </Tabs>
     )
 }

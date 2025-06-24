@@ -200,8 +200,29 @@ const SocialFeed = () => {
     };
 
     const handleComment = async (postId) => {
-        if (!commentText[postId]?.trim()) {
+        const comment = commentText[postId]?.trim();
+        
+        // Validation des champs vides
+        if (!comment) {
             Alert.alert('Error', 'Please enter a comment');
+            return;
+        }
+
+        // Validation de la longueur du commentaire
+        if (comment.length < 2) {
+            Alert.alert('Error', 'Comment must contain at least 2 characters');
+            return;
+        }
+
+        if (comment.length > 500) {
+            Alert.alert('Error', 'Comment cannot exceed 500 characters');
+            return;
+        }
+
+        // Validation du contenu (pas de commentaires vides après nettoyage)
+        const cleanComment = comment.replace(/\s+/g, ' ').trim();
+        if (cleanComment.length < 2) {
+            Alert.alert('Error', 'Comment cannot contain only spaces');
             return;
         }
 
@@ -212,7 +233,7 @@ const SocialFeed = () => {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ text: commentText[postId] }),
+                body: JSON.stringify({ text: cleanComment }),
             });
 
             if (!response.ok) {
@@ -242,7 +263,6 @@ const SocialFeed = () => {
                 [postId]: ''
             }));
         } catch (error) {
-            console.error('Error adding comment:', error);
             Alert.alert('Error', 'Failed to add comment');
         }
     };

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, Alert, RefreshControl, Image } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, Alert, RefreshControl, Image, SafeAreaView } from 'react-native'
 import { useAuthStore } from '../../store/authStore';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,8 @@ import { useEffect, useState } from 'react';
 import { formatMemberSince } from '../../lib/utils';
 import { API_URL } from '../../constants/api';
 import ProfileHeader from '../../components/profileHeader';
+import Spacer from '../../components/Spacer';
+import { Colors } from '../../constants/Colors';
 
 const Profile = () => {
     const { user, token, logout } = useAuthStore();
@@ -18,7 +20,7 @@ const Profile = () => {
     const [posts, setPosts] = useState([]);
 
     // Default avatar URL from DiceBear API using PNG format
-    const defaultAvatar = `https://api.dicebear.com/7.x/initials/png?seed=${user?.email || 'default'}`;
+    const defaultAvatar = `https://api.dicebear.com/9.x/initials/png?seed=${user?.username || 'default'}`;
 
     const handleImageError = (e) => {
         console.log("Image loading error:", e.nativeEvent.error);
@@ -140,6 +142,20 @@ const Profile = () => {
         }
     };
 
+    const handleEditPost = (post) => {
+        // Navigate to edit screen with post data
+        router.push({
+            pathname: '/(tabs)/edit',
+            params: {
+                postId: post._id,
+                title: post.title,
+                caption: post.caption,
+                rate: post.rate,
+                image: post.image
+            }
+        });
+    };
+
     const renderHeader = () => (
         <View className="bg-white rounded-xl shadow-sm mx-4 my-3">
             <ProfileHeader 
@@ -163,33 +179,41 @@ const Profile = () => {
 
     const renderPostItem = ({ item }) => (
         <View className="bg-white mx-4 my-2 rounded-2xl shadow-sm overflow-hidden">
-            {/* Post Header with Delete Button */}
+            {/* Post Header with Edit and Delete Buttons */}
             <View className="flex-row justify-between items-center p-4 py-2 border-b border-gray-100">
-                <Text className="text-xl font-bold text-gray-900">
+                <Text className="text-xl font-bold text-gray-900 flex-1 mr-2">
                     {item.title}
                 </Text>
-                <TouchableOpacity 
-                    onPress={() => {
-                        Alert.alert(
-                            'Delete Post',
-                            'Are you sure you want to delete this post?',
-                            [
-                                {
-                                    text: 'Cancel',
-                                    style: 'cancel'
-                                },
-                                {
-                                    text: 'Delete',
-                                    onPress: () => handleDeletePost(item._id),
-                                    style: 'destructive'
-                                }
-                            ]
-                        );
-                    }}
-                    className="p-2"
-                >
-                    <Ionicons name="trash-outline" size={24} color="#ef4444" />
-                </TouchableOpacity>
+                <View className="flex-row items-center">
+                    <TouchableOpacity 
+                        onPress={() => handleEditPost(item)}
+                        className="p-2 mr-2"
+                    >
+                        <Ionicons name="create-outline" size={24} color="#3b82f6" />
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                        onPress={() => {
+                            Alert.alert(
+                                'Delete Post',
+                                'Are you sure you want to delete this post?',
+                                [
+                                    {
+                                        text: 'Cancel',
+                                        style: 'cancel'
+                                    },
+                                    {
+                                        text: 'Delete',
+                                        onPress: () => handleDeletePost(item._id),
+                                        style: 'destructive'
+                                    }
+                                ]
+                            );
+                        }}
+                        className="p-2"
+                    >
+                        <Ionicons name="trash-outline" size={24} color="#ef4444" />
+                    </TouchableOpacity>
+                </View>
             </View>
 
             <View className='flex-row'>
@@ -232,8 +256,25 @@ const Profile = () => {
         </View>
     );
 
+    // Add admin section if user is admin
+    const renderAdminSection = () => {
+        if (user?.role !== 'admin') return null;
+        
+        return (
+            <View className="mt-6">
+                <Text className="text-lg font-semibold text-gray-900 mb-3">Admin Panel</Text>
+                <TouchableOpacity 
+                    onPress={() => router.push('/(admin)/dashboard')}
+                    className="bg-blue-500 rounded-lg p-4 mb-2"
+                >
+                    <Text className="text-white text-center font-medium">Go to Admin Dashboard</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    };
+
     return (
-        <View className="flex-1 bg-gray-300/50" style={{ paddingTop: insets.top }}>
+        <SafeAreaView className="flex-1 bg-gray-50">
             <FlatList
                 data={posts}
                 renderItem={renderPostItem}
@@ -264,7 +305,10 @@ const Profile = () => {
                     )
                 }
             />
-        </View>
+
+            {/* Admin section */}
+            {renderAdminSection()}
+        </SafeAreaView>
     )
 }
 

@@ -40,21 +40,52 @@ const Create = () => {
             return;
         }
 
+        // Validate image size before sending (reduced to 2MB to be safe)
+        if (image64) {
+            const imageSizeInBytes = (image64.length * 3) / 4; // Approximation for base64
+            const maxSizeInBytes = 2 * 1024 * 1024; // 2MB (reduced from 5MB)
+            
+            if (imageSizeInBytes > maxSizeInBytes) {
+                Alert.alert("Error", "Image is too large. Please select a smaller image (max 2MB).");
+                return;
+            }
+        }
+
         try {
             setIsLoading(true);
             
-            // Prepare image for Cloudinary
+            // Test server connectivity first
+            console.log("Testing server connectivity...");
+            try {
+                const testResponse = await fetch(`${API_URL}/cars`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                console.log("Server test response status:", testResponse.status);
+            } catch (testError) {
+                console.log("Server connectivity test failed:", testError);
+                throw new Error("Cannot connect to server. Please check your internet connection.");
+            }
+            
+            // Prepare image for Cloudinary - ensure proper format
             let base64Image = image64;
+            
             // Remove any existing data URL prefix
             if (base64Image.includes('base64,')) {
                 base64Image = base64Image.split('base64,')[1];
             }
 
-            // Add proper data URL prefix for Cloudinary
+            // Ensure the image has the proper data URL format for Cloudinary
             const imageDataUrl = `data:image/jpeg;base64,${base64Image}`;
 
             console.log("Making request to:", `${API_URL}/cars`);
-            console.log("Image data length:", imageDataUrl.length);
+            console.log("Image size:", Math.round((image64.length * 3) / 4 / 1024), "KB");
+            console.log("Request headers:", {
+                'Authorization': `Bearer ${token ? 'Token exists' : 'No token'}`,
+                'Content-Type': 'application/json'
+            });
 
             const response = await fetch(`${API_URL}/cars`, {
                 method: 'POST',
@@ -66,11 +97,36 @@ const Create = () => {
                     title,
                     caption,
                     rate: rating,
-                    image: image64
+                    image: imageDataUrl  // Send the properly formatted image data
                 }),
             });
 
-            const data = await response.json();
+            console.log("Response status:", response.status);
+            console.log("Response headers:", response.headers);
+
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                // Handle non-JSON response
+                const responseText = await response.text();
+                console.log("Non-JSON response:", responseText.substring(0, 200));
+                
+                if (response.status === 413) {
+                    throw new Error("Image is too large. Please select a smaller image or try again.");
+                }
+                
+                throw new Error(`Server returned non-JSON response. Status: ${response.status}. Please try again later.`);
+            }
+
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.log("JSON parse error:", parseError);
+                const responseText = await response.text();
+                console.log("Response text:", responseText.substring(0, 200));
+                throw new Error(`Failed to parse server response: ${parseError.message}`);
+            }
 
             if(!response.ok) {
                 if (response.status === 401) {
@@ -102,6 +158,7 @@ const Create = () => {
             router.push('/');
 
         } catch (error) {
+            console.log("Error in handleSubmit:", error);
             Alert.alert("Error", error.message);
         } finally {
             setIsLoading(false);
@@ -137,8 +194,10 @@ const Create = () => {
                                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                                 allowsEditing: true,
                                 aspect: [4, 3],
-                                quality: 0.7,  // Increased quality for better image
+                                quality: 0.3,  // Further reduced quality for smaller file size
                                 base64: true,
+                                maxWidth: 800, // Reduced width
+                                maxHeight: 800, // Reduced height
                             });
                             handleImageResult(result);
                         }
@@ -150,8 +209,10 @@ const Create = () => {
                                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                                 allowsEditing: true,
                                 aspect: [4, 3],
-                                quality: 0.7,  // Increased quality for better image
+                                quality: 0.3,  // Further reduced quality for smaller file size
                                 base64: true,
+                                maxWidth: 800, // Reduced width
+                                maxHeight: 800, // Reduced height
                             });
                             handleImageResult(result);
                         }
