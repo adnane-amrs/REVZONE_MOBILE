@@ -195,7 +195,6 @@ export const useAdminStore = create((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             const token = await AsyncStorage.getItem('token');
-
             const response = await fetch(`${API_URL}/admin/users/stats`, {
                 method: 'GET',
                 headers: {
@@ -205,7 +204,7 @@ export const useAdminStore = create((set, get) => ({
             });
 
             const data = await response.json();
-
+            console.log("ADMIN DASHBOARD USER STATS API RESPONSE:", data);
 
             if (!response.ok) throw new Error(data.message || 'Something went wrong!');
 

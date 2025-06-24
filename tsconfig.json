@@ -1,5 +1,4 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
     "paths": {
@@ -13,6 +12,12 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "nativewind-env.d.ts"
-, "app/onboarding.tsx", "app/index.jsx", "app/_layout.jsx", "app/about.jsx", "app/contact.jsx"  ]
+    "nativewind-env.d.ts",
+    "app/onboarding.tsx",
+    "app/index.jsx",
+    "app/_layout.jsx",
+    "app/about.jsx",
+    "app/contact.jsx"
+  ],
+  "extends": "expo/tsconfig.base"
 }

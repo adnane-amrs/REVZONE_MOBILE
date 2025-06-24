@@ -281,7 +281,7 @@ const SocialFeed = () => {
                             <View className="flex-row items-center">
                                 <View className="flex-row">
                                     {[...Array(5)].map((_, index) => (
-                                        <Ionicons
+                                <Ionicons 
                                             key={index}
                                             name={index < item.rate ? "star" : "star-outline"}
                                             size={16}
@@ -339,7 +339,7 @@ const SocialFeed = () => {
                                 className="flex-row items-center"
                                 onPress={() => handleLike(item._id)}
                             >
-                                <Ionicons
+                                <Ionicons 
                                     name={likedPosts[item._id] ? "heart" : "heart-outline"}
                                     size={24}
                                     color={likedPosts[item._id] ? "#4042e2" : "#8e8e93"}
@@ -366,7 +366,7 @@ const SocialFeed = () => {
                             <TouchableOpacity
                                 className="flex-row items-center"
                             >
-                                <Ionicons
+                                <Ionicons 
                                     name="share-outline"
                                     size={24}
                                     color="#8e8e93"
@@ -437,7 +437,7 @@ const SocialFeed = () => {
             <FlatList 
                 data={posts}
                 renderItem={renderItem}
-                keyExtractor={(item) => item._id}
+                keyExtractor={(item, index) => item.id ? item.id.toString() : `item-${index}`}
                 showsVerticalScrollIndicator={false}
                 onEndReached={handleLoadMore}
                 onEndReachedThreshold={0.1}

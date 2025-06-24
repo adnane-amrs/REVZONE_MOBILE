@@ -166,67 +166,75 @@ const Create = () => {
     }
 
     const pickImage = async () => {
-        try {
-            // Request permissions for both camera and media library
-            if (Platform.OS !== 'web') {
-                const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
-                const mediaLibraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-                
-                if (cameraPermission.status !== 'granted' || mediaLibraryPermission.status !== 'granted') {
-                    Alert.alert(
-                        'Permission Required',
-                        'Please grant camera and photo library permissions to upload images.',
-                        [{ text: 'OK' }]
-                    );
-                    return;
-                }
+        
+        // Always request permissions every time the user tries to add an image
+        if (Platform.OS !== 'web') {
+            const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+            const mediaLibraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (cameraPermission.status !== 'granted' || mediaLibraryPermission.status !== 'granted') {
+                Alert.alert(
+                    'Permission Required',
+                    'Please grant camera and photo library permissions to upload images.',
+                    [{ text: 'OK' }]
+                );
+                return;
             }
-
-            // Show options to choose between camera and gallery
-            Alert.alert(
-                'Select Image Source',
-                'Choose where to get the image from',
-                [
-                    {
-                        text: 'Camera',
-                        onPress: async () => {
-                            const result = await ImagePicker.launchCameraAsync({
-                                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                                allowsEditing: true,
-                                aspect: [4, 3],
-                                quality: 0.3,  // Further reduced quality for smaller file size
-                                base64: true,
-                                maxWidth: 800, // Reduced width
-                                maxHeight: 800, // Reduced height
-                            });
-                            handleImageResult(result);
-                        }
-                    },
-                    {
-                        text: 'Gallery',
-                        onPress: async () => {
-                            const result = await ImagePicker.launchImageLibraryAsync({
-                                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                                allowsEditing: true,
-                                aspect: [4, 3],
-                                quality: 0.3,  // Further reduced quality for smaller file size
-                                base64: true,
-                                maxWidth: 800, // Reduced width
-                                maxHeight: 800, // Reduced height
-                            });
-                            handleImageResult(result);
-                        }
-                    },
-                    {
-                        text: 'Cancel',
-                        style: 'cancel'
-                    }
-                ]
-            );
-        } catch (error) {
-            console.log("Error picking image", error);
-            Alert.alert("Error", "Error picking image");
         }
+
+        // Show options to choose between camera and gallery
+        Alert.alert(
+            'Select Image Source',
+            'Choose where to get the image from',
+            [
+                {
+                    text: 'Camera',
+                    onPress: async () => {
+                        // Request camera permission again before launching camera
+                        if (Platform.OS !== 'web') {
+                            const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+                            if (cameraPermission.status !== 'granted') {
+                                Alert.alert('Permission Required', 'Camera permission is required.', [{ text: 'OK' }]);
+                                return;
+                            }
+                        }
+                        const result = await ImagePicker.launchCameraAsync({
+                            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                            allowsEditing: true,
+                            aspect: [4, 3],
+                            quality: 0.3,  // Further reduced quality for smaller file size
+                            base64: true,
+                            maxWidth: 800, // Reduced width
+                            maxHeight: 800, // Reduced height
+                        });
+                        handleImageResult(result);
+                    }
+                },
+                {
+                    text: 'Gallery',
+                    onPress: async () => {
+                        // Request gallery permission again before launching picker
+                        if (Platform.OS !== 'web') {
+                            const mediaLibraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                            if (mediaLibraryPermission.status !== 'granted') {
+                                Alert.alert('Permission Required', 'Photo library permission is required.', [{ text: 'OK' }]);
+                                return;
+                            }
+                        }
+                        const result = await ImagePicker.launchImageLibraryAsync({
+                            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                            allowsEditing: true,
+                            aspect: [4, 3],
+                            quality: 0.3,
+                            base64: true,
+                            maxWidth: 800,
+                            maxHeight: 800,
+                        });
+                        handleImageResult(result);
+                    }
+                },
+                { text: 'Cancel', style: 'cancel' }
+            ]
+        );
     }
 
     const handleImageResult = async (result) => {

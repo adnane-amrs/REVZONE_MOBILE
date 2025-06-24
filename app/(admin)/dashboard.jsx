@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../store/authStore';
@@ -6,6 +6,9 @@ import { useAdminStore } from '../../store/adminStore';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { useRouter } from 'expo-router';
+import * as ScreenCapture from 'expo-screen-capture';
+import { useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const AdminDashboard = () => {
     const router = useRouter();
@@ -17,6 +20,17 @@ const AdminDashboard = () => {
         getUserStats();
         getPostStats();
     }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            // Block screenshots and screen recording
+            ScreenCapture.preventScreenCaptureAsync();
+            return () => {
+                // Allow screenshots again when leaving the page
+                ScreenCapture.allowScreenCaptureAsync();
+            };
+        }, [])
+    );
 
     const handleLogout = () => {
         Alert.alert(
@@ -47,7 +61,7 @@ const AdminDashboard = () => {
     );
 
     return (
-        <SafeAreaView className="flex-1 bg-gray-100">
+        <SafeAreaView className="flex-1 bg-gray-100" >
             {/* Header */}
             <View className="bg-dark px-4 py-3 border-b text-white border-gray-200">
                 <View className="flex-row items-center justify-between">
@@ -66,30 +80,28 @@ const AdminDashboard = () => {
                 <View className="mb-6">
                     <Text className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</Text>
                     <View className="space-y-4">
-                        <StatCard
-                            title="Total Users"
-                            value={userStats.totalUsers || 0}
-                            icon="people-outline"
-                            color="bg-blue-500"
-                        />
-                        <StatCard
-                            title="Active Users"
-                            value={userStats.activeUsers || 0}
-                            icon="checkmark-circle-outline"
-                            color="bg-green-500"
-                        />
-                        <StatCard
-                            title="Suspended Users"
-                            value={userStats.suspendedUsers || 0}
-                            icon="pause-circle-outline"
-                            color="bg-yellow-500"
-                        />
-                        <StatCard
-                            title="Banned Users"
-                            value={userStats.bannedUsers || 0}
-                            icon="close-circle-outline"
-                            color="bg-red-500"
-                        />
+                        <View className="flex-row justify-between">
+                            <View className="flex-1 mr-2 bg-blue-100 rounded-lg p-4 items-center">
+                                <Ionicons name="people-outline" size={28} color="#2563eb" />
+                                <Text className="text-xs text-blue-800 mt-2">Total Users</Text>
+                                <Text className="text-2xl font-bold text-blue-900 mt-1">{userStats.totalUsers ?? 0}</Text>
+                            </View>
+                            <View className="flex-1 mx-1 bg-green-100 rounded-lg p-4 items-center">
+                                <Ionicons name="checkmark-circle-outline" size={28} color="#16a34a" />
+                                <Text className="text-xs text-green-800 mt-2">Active</Text>
+                                <Text className="text-2xl font-bold text-green-900 mt-1">{userStats.activeUsers ?? 0}</Text>
+                            </View>
+                            <View className="flex-1 mx-1 bg-yellow-100 rounded-lg p-4 items-center">
+                                <Ionicons name="pause-circle-outline" size={28} color="#eab308" />
+                                <Text className="text-xs text-yellow-800 mt-2">Suspended</Text>
+                                <Text className="text-2xl font-bold text-yellow-900 mt-1">{userStats.suspendedUsers ?? 0}</Text>
+                            </View>
+                            <View className="flex-1 ml-2 bg-red-100 rounded-lg p-4 items-center">
+                                <Ionicons name="close-circle-outline" size={28} color="#dc2626" />
+                                <Text className="text-xs text-red-800 mt-2">Banned</Text>
+                                <Text className="text-2xl font-bold text-red-900 mt-1">{userStats.bannedUsers ?? 0}</Text>
+                            </View>
+                        </View>
                     </View>
                 </View>
 

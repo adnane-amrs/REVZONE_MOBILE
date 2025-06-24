@@ -3,12 +3,14 @@ import { useAuthStore } from '../../store/authStore';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { formatMemberSince } from '../../lib/utils';
 import { API_URL } from '../../constants/api';
 import ProfileHeader from '../../components/profileHeader';
 import Spacer from '../../components/Spacer';
 import { Colors } from '../../constants/Colors';
+import * as ScreenCapture from 'expo-screen-capture';
+import { useFocusEffect } from 'expo-router';
 
 const Profile = () => {
     const { user, token, logout } = useAuthStore();
@@ -40,6 +42,17 @@ const Profile = () => {
         }
         fetchPosts();
     }, [user, token]);
+
+    useFocusEffect(
+        useCallback(() => {
+        // Block screenshots and screen recording
+        ScreenCapture.preventScreenCaptureAsync();
+            return () => {
+            // Allow screenshots again when leaving the page
+                ScreenCapture.allowScreenCaptureAsync();
+            };
+        }, [])
+    );
 
     const fetchPosts = async(pageNum=1, refresh=false) => {
         if (!user || !token) {
@@ -178,7 +191,7 @@ const Profile = () => {
     );
 
     const renderPostItem = ({ item }) => (
-        <View className="bg-gray-00 mx-4 my-2 rounded-2xl shadow-sm overflow-hidden">
+        <View className="bg-white mx-4 my-2 rounded-2xl shadow-sm overflow-hidden">
             {/* Post Header with Edit and Delete Buttons */}
             <View className="flex-row justify-between items-center p-4 py-2 border-b border-gray-100">
                 <Text className="text-xl font-bold text-gray-900 flex-1 mr-2">
@@ -274,7 +287,7 @@ const Profile = () => {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-gray-50">
+        <SafeAreaView className="flex-1 bg-gray-200" style={{ paddingTop: insets.top + 16 }}>
             <FlatList
                 data={posts}
                 renderItem={renderPostItem}
@@ -289,7 +302,6 @@ const Profile = () => {
                 }
                 contentContainerStyle={{ 
                     paddingBottom: insets.bottom + 50,
-                    paddingTop: 10
                 }}
                 ListEmptyComponent={
                     loading ? (

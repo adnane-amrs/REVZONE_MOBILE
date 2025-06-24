@@ -41,10 +41,10 @@ const ProfileHeader = ({ user, imageError, defaultAvatar, onImageError }) => {
     if (!user) return null;
 
     return (
-        <View className="bg-white rounded-xl p-4 shadow-sm">
+        <View className="bg-white rounded-xl pt-4 px-4 shadow-sm">
             <View className="flex-row items-center space-x-4 gap-4">
                 <View className="relative">
-                    <Image 
+                    <Image  
                         source={{ 
                             uri: imageError ? defaultAvatar : (user?.profileImage || defaultAvatar),
                             cache: 'reload'

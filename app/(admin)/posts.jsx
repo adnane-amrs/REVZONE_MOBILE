@@ -5,6 +5,7 @@ import { useAdminStore } from '../../store/adminStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
+
 const PostManagement = () => {
     const router = useRouter();
     const { posts, postPagination, getPosts, updatePostStatus, deletePost, isLoading } = useAdminStore();
@@ -15,11 +16,24 @@ const PostManagement = () => {
     const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
-        // Fetch posts whenever a filter or page changes
+        console.log('Status filter changed:', statusFilter);
         getPosts(currentPage, 10, searchQuery, statusFilter);
     }, [currentPage, searchQuery, statusFilter]);
 
-    const handleConfirmDelete = (postId) => {
+    // New: handle status update with feedback and refresh
+    const handleUpdateStatus = async (postId, status) => {
+        console.log('Updating post', postId, 'to status', status);
+        const result = await updatePostStatus(postId, status);
+        if (result.success) {
+            Alert.alert("Success", "Post status updated.");
+            getPosts(currentPage, 10, searchQuery, statusFilter);
+        } else {
+            Alert.alert("Error", result.error || "Failed to update post status.");
+        }
+    };
+
+    // New: handle delete with feedback and refresh
+    const handleDelete = (postId) => {
         Alert.alert(
             "Delete Post",
             "Are you sure you want to permanently delete this post?",
@@ -27,8 +41,16 @@ const PostManagement = () => {
                 { text: "Cancel", style: "cancel" },
                 { 
                     text: "Delete", 
-                    onPress: () => deletePost(postId),
-                    style: "destructive"
+                    style: "destructive",
+                    onPress: async () => {
+                        const result = await deletePost(postId);
+                        if (result.success) {
+                            Alert.alert("Success", "Post deleted.");
+                            getPosts(currentPage, 10, searchQuery, statusFilter);
+                        } else {
+                            Alert.alert("Error", result.error || "Failed to delete post.");
+                        }
+                    }
                 }
             ]
         );
@@ -52,12 +74,14 @@ const PostManagement = () => {
                     <View className="flex-row items-center"><Ionicons name="chatbubble-outline" size={14} color="gray" /><Text className="text-xs ml-1">{item.commentsCount} Comments</Text></View>
                 </View>
                 <View className={`px-2 py-1 rounded-full ${
-                    item.status === 'visible' ? 'bg-green-100' : 
-                    item.status === 'hidden' ? 'bg-yellow-100' : 'bg-blue-100'
+                    item.status === 'visible' ? 'bg-green-200' : 
+                    item.status === 'hidden' ? 'bg-yellow-200' : 
+                    item.status === 'featured' ? 'bg-blue-200' : 'bg-gray-200'
                 }`}>
                     <Text className={`text-xs font-medium ${
                         item.status === 'visible' ? 'text-green-800' : 
-                        item.status === 'hidden' ? 'text-yellow-800' : 'text-blue-800'
+                        item.status === 'hidden' ? 'text-yellow-800' : 
+                        item.status === 'featured' ? 'text-blue-800' : 'text-gray-800'
                     }`}>
                         {item.status}
                     </Text>
@@ -65,11 +89,11 @@ const PostManagement = () => {
             </View>
 
             {/* Action buttons section */}
-            <View className="flex-row space-x-2 pt-3 border-t border-gray-100">
-                <TouchableOpacity onPress={() => updatePostStatus(item._id, 'visible')} className="flex-1 bg-green-500 py-2 rounded-lg items-center"><Text className="text-white text-xs font-bold">Visible</Text></TouchableOpacity>
-                <TouchableOpacity onPress={() => updatePostStatus(item._id, 'hidden')} className="flex-1 bg-yellow-500 py-2 rounded-lg items-center"><Text className="text-white text-xs font-bold">Hide</Text></TouchableOpacity>
-                <TouchableOpacity onPress={() => updatePostStatus(item._id, 'featured')} className="flex-1 bg-blue-500 py-2 rounded-lg items-center"><Text className="text-white text-xs font-bold">Feature</Text></TouchableOpacity>
-                <TouchableOpacity onPress={() => handleConfirmDelete(item._id)} className="flex-1 bg-red-500 py-2 rounded-lg items-center"><Text className="text-white text-xs font-bold">Delete</Text></TouchableOpacity>
+            <View className="flex-row gap-1 pt-3 border-t border-gray-100">
+                <TouchableOpacity onPress={() => handleUpdateStatus(item._id, 'visible')} className="flex-1 bg-green-500 py-2 rounded-lg items-center" disabled={isLoading}><Text className="text-white text-xs font-bold">Visible</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => handleUpdateStatus(item._id, 'hidden')} className="flex-1 bg-yellow-500 py-2 rounded-lg items-center" disabled={isLoading}><Text className="text-white text-xs font-bold">Hide</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => handleUpdateStatus(item._id, 'featured')} className="flex-1 bg-blue-500 py-2 rounded-lg items-center" disabled={isLoading}><Text className="text-white text-xs font-bold">Feature</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDelete(item._id)} className="flex-1 bg-red-500 py-2 rounded-lg items-center" disabled={isLoading}><Text className="text-white text-xs font-bold">Delete</Text></TouchableOpacity>
             </View>
         </View>
     );
@@ -92,7 +116,7 @@ const PostManagement = () => {
                     onChangeText={setSearchQuery}
                     className="bg-gray-100 rounded-lg px-4 py-3 border border-gray-200"
                 />
-                <View className="flex-row space-x-2 mt-3">
+                <View className="flex-row gap-2 mt-3">
                     {['visible', 'hidden', 'featured'].map(s => (
                         <TouchableOpacity 
                             key={s}
@@ -120,8 +144,8 @@ const PostManagement = () => {
                 <View className="bg-white px-4 py-3 border-t border-gray-200 flex-row items-center justify-between">
                     <TouchableOpacity 
                         onPress={() => setCurrentPage(currentPage - 1)}
-                        disabled={!postPagination.hasPrev}
-                        className={`px-4 py-2 rounded-lg ${!postPagination.hasPrev ? 'bg-gray-300' : 'bg-blue-500'}`}
+                        disabled={!postPagination.hasPrev || isLoading}
+                        className={`px-4 py-2 rounded-lg ${!postPagination.hasPrev || isLoading ? 'bg-gray-300' : 'bg-blue-500'}`}
                     >
                         <Text className="text-white">Previous</Text>
                     </TouchableOpacity>
@@ -130,8 +154,8 @@ const PostManagement = () => {
                     </Text>
                     <TouchableOpacity 
                         onPress={() => setCurrentPage(currentPage + 1)}
-                        disabled={!postPagination.hasNext}
-                        className={`px-4 py-2 rounded-lg ${!postPagination.hasNext ? 'bg-gray-300' : 'bg-blue-500'}`}
+                        disabled={!postPagination.hasNext || isLoading}
+                        className={`px-4 py-2 rounded-lg ${!postPagination.hasNext || isLoading ? 'bg-gray-300' : 'bg-blue-500'}`}
                     >
                         <Text className="text-white">Next</Text>
                     </TouchableOpacity>
