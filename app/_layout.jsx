@@ -45,7 +45,7 @@ const RootLayout = () => {
                 }
                 // If a regular user is on the login/welcome screen, send to tabs.
                 else if (inAuthGroup || isAtRoot) {
-                    router.replace('/(tabs)/index');
+                    router.replace('/');
                 }
             }
         } else {

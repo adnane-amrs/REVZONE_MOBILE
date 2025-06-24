@@ -178,7 +178,7 @@ const Profile = () => {
     );
 
     const renderPostItem = ({ item }) => (
-        <View className="bg-white mx-4 my-2 rounded-2xl shadow-sm overflow-hidden">
+        <View className="bg-gray-00 mx-4 my-2 rounded-2xl shadow-sm overflow-hidden">
             {/* Post Header with Edit and Delete Buttons */}
             <View className="flex-row justify-between items-center p-4 py-2 border-b border-gray-100">
                 <Text className="text-xl font-bold text-gray-900 flex-1 mr-2">

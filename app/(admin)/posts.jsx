@@ -47,15 +47,9 @@ const PostManagement = () => {
 
             {/* Middle section with stats and status */}
             <View className="flex-row justify-between items-center mb-3">
-                <View className="flex-row space-x-4">
-                    <View className="flex-row items-center">
-                        <Ionicons name="heart" size={16} color="#ef4444" />
-                        <Text className="text-sm font-semibold text-gray-800 ml-1">{item.likesCount}</Text>
-                    </View>
-                    <View className="flex-row items-center">
-                        <Ionicons name="chatbubble" size={16} color="#3b82f6" />
-                        <Text className="text-sm font-semibold text-gray-800 ml-1">{item.commentsCount}</Text>
-                    </View>
+                <View className="flex-row space-x-3">
+                    <View className="flex-row items-center"><Ionicons name="heart-outline" size={14} color="gray" /><Text className="text-xs ml-1">{item.likesCount} Likes</Text></View>
+                    <View className="flex-row items-center"><Ionicons name="chatbubble-outline" size={14} color="gray" /><Text className="text-xs ml-1">{item.commentsCount} Comments</Text></View>
                 </View>
                 <View className={`px-2 py-1 rounded-full ${
                     item.status === 'visible' ? 'bg-green-100' : 
@@ -71,7 +65,7 @@ const PostManagement = () => {
             </View>
 
             {/* Action buttons section */}
-            <View className="flex-row gap-1 pt-3 border-t border-gray-100">
+            <View className="flex-row space-x-2 pt-3 border-t border-gray-100">
                 <TouchableOpacity onPress={() => updatePostStatus(item._id, 'visible')} className="flex-1 bg-green-500 py-2 rounded-lg items-center"><Text className="text-white text-xs font-bold">Visible</Text></TouchableOpacity>
                 <TouchableOpacity onPress={() => updatePostStatus(item._id, 'hidden')} className="flex-1 bg-yellow-500 py-2 rounded-lg items-center"><Text className="text-white text-xs font-bold">Hide</Text></TouchableOpacity>
                 <TouchableOpacity onPress={() => updatePostStatus(item._id, 'featured')} className="flex-1 bg-blue-500 py-2 rounded-lg items-center"><Text className="text-white text-xs font-bold">Feature</Text></TouchableOpacity>
