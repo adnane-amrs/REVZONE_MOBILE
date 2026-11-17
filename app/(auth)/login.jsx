@@ -1,11 +1,10 @@
 import { Link, useRouter } from "expo-router";
-import { StyleSheet, TextInput, Text, View, SafeAreaView, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Image} from 'react-native';
+import { TextInput, Text, View, SafeAreaView, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Image} from 'react-native';
 import { useState, useEffect } from 'react';
 import Spacer from "../../components/Spacer";
 import {Ionicons} from '@expo/vector-icons'
 import { useAuthStore } from '../../store/authStore';
 import { Colors } from "../../constants/Colors";
-import {logo} from '../../assets/images/REVZONE.png'; // Adjust the path as necessary
 import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -14,7 +13,7 @@ export default function Login(){
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
     const [isBiometricSupported, setIsBiometricSupported] = useState(false)
-    const {user, isLoading, login} = useAuthStore();
+    const {isLoading, login} = useAuthStore();
     const router = useRouter();
     
     useEffect(() => {
@@ -78,7 +77,7 @@ export default function Login(){
                     Alert.alert("Error", loginResult.error);
                 }
             }
-        } catch (error) {
+        } catch {
             Alert.alert('Error', 'Biometric authentication failed');
         }
     };
@@ -181,19 +180,3 @@ export default function Login(){
         </SafeAreaView>
     )
 }
-
-const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-    },
-    input: {
-        height: 55,
-        width: '90%',
-        padding: 15, // internal spacing (inside the input)         
-        marginBottom: 10, // external spacing (outside the input)
-    },
-    inputFocused: {
-        borderColor: '#007AFF',
-        backgroundColor: 'gray-200',
-    },
-});

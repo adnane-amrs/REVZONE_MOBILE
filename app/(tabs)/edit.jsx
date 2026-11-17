@@ -9,8 +9,7 @@ import {
     Platform,
     ScrollView,
     Image,
-    ActivityIndicator,
-    StyleSheet
+    ActivityIndicator
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -40,7 +39,7 @@ const Edit = () => {
             router.replace("/(auth)/login");
             return;
         }
-    }, [token]);
+    }, [token, router]);
 
     const handleSubmit = async () => {
         if(!title || !caption || !rating) {
@@ -160,22 +159,8 @@ const Edit = () => {
 
     const pickImage = async () => {
         try {
-            // Request permissions for both camera and media library
-            if (Platform.OS !== 'web') {
-                const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
-                const mediaLibraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-                
-                if (cameraPermission.status !== 'granted' || mediaLibraryPermission.status !== 'granted') {
-                    Alert.alert(
-                        'Permission Required',
-                        'Please grant camera and photo library permissions to upload images.',
-                        [{ text: 'OK' }]
-                    );
-                    return;
-                }
-            }
-
-            // Show options to choose between camera and gallery
+            // Show options to choose between camera and gallery.
+            // Each option requests only the permission it needs, at the moment it is needed.
             Alert.alert(
                 'Select Image Source',
                 'Choose where to get the image from',
@@ -183,14 +168,19 @@ const Edit = () => {
                     {
                         text: 'Camera',
                         onPress: async () => {
+                            if (Platform.OS !== 'web') {
+                                const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+                                if (cameraPermission.status !== 'granted') {
+                                    Alert.alert('Permission Required', 'Camera permission is required.', [{ text: 'OK' }]);
+                                    return;
+                                }
+                            }
                             const result = await ImagePicker.launchCameraAsync({
-                                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                                mediaTypes: ['images'],
                                 allowsEditing: true,
                                 aspect: [4, 3],
-                                quality: 0.3,  // Further reduced quality for smaller file size
+                                quality: 0.3,  // Reduced quality for smaller file size
                                 base64: true,
-                                maxWidth: 800, // Reduced width
-                                maxHeight: 800, // Reduced height
                             });
                             handleImageResult(result);
                         }
@@ -198,14 +188,19 @@ const Edit = () => {
                     {
                         text: 'Gallery',
                         onPress: async () => {
+                            if (Platform.OS !== 'web') {
+                                const mediaLibraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                                if (mediaLibraryPermission.status !== 'granted') {
+                                    Alert.alert('Permission Required', 'Photo library permission is required.', [{ text: 'OK' }]);
+                                    return;
+                                }
+                            }
                             const result = await ImagePicker.launchImageLibraryAsync({
-                                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                                mediaTypes: ['images'],
                                 allowsEditing: true,
                                 aspect: [4, 3],
-                                quality: 0.3,  // Further reduced quality for smaller file size
+                                quality: 0.3,  // Reduced quality for smaller file size
                                 base64: true,
-                                maxWidth: 800, // Reduced width
-                                maxHeight: 800, // Reduced height
                             });
                             handleImageResult(result);
                         }
@@ -351,5 +346,3 @@ const Edit = () => {
 };
 
 export default Edit;
-
-const styles = StyleSheet.create({}); 

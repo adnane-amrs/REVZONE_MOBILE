@@ -1,12 +1,9 @@
-import { StyleSheet, Text, View, TextInput, Platform, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native'
+import { Text, View, TextInput, Platform, TouchableOpacity, ScrollView, ActivityIndicator, KeyboardAvoidingView, Alert } from 'react-native'
 import React, { useState } from 'react'
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { KeyboardAvoidingView } from 'react-native';
 import Spacer from '../../components/Spacer';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
-import { Alert } from 'react-native';
 import { Image } from 'expo-image';
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
@@ -18,14 +15,11 @@ const Create = () => {
     const [caption, setCaption] = useState('');
     const [rating, setRating] = useState(0);
     const [image, setImage] = useState(null); // to display the image
-    const [image64, setImage64] = useState([]);   // turn image to text
+    const [image64, setImage64] = useState(null);   // turn image to text
     const [isLoading, setIsLoading] = useState(false);
-    
-    const router = useRouter();
-    const insets = useSafeAreaInsets();
-    const {token} = useAuthStore();
 
-    console.log(token);
+    const router = useRouter();
+    const {token} = useAuthStore();
 
     const handleSubmit = async () => {
         if(!title || !caption || !rating || !image64) {
@@ -151,7 +145,7 @@ const Create = () => {
 
             setTitle('');
             setCaption('');
-            setRating(3);
+            setRating(0);
             setImage(null);
             setImage64(null);
 
@@ -166,22 +160,8 @@ const Create = () => {
     }
 
     const pickImage = async () => {
-        
-        // Always request permissions every time the user tries to add an image
-        if (Platform.OS !== 'web') {
-            const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
-            const mediaLibraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (cameraPermission.status !== 'granted' || mediaLibraryPermission.status !== 'granted') {
-                Alert.alert(
-                    'Permission Required',
-                    'Please grant camera and photo library permissions to upload images.',
-                    [{ text: 'OK' }]
-                );
-                return;
-            }
-        }
-
-        // Show options to choose between camera and gallery
+        // Show options to choose between camera and gallery.
+        // Each option requests only the permission it needs, at the moment it is needed.
         Alert.alert(
             'Select Image Source',
             'Choose where to get the image from',
@@ -198,13 +178,11 @@ const Create = () => {
                             }
                         }
                         const result = await ImagePicker.launchCameraAsync({
-                            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                            mediaTypes: ['images'],
                             allowsEditing: true,
                             aspect: [4, 3],
-                            quality: 0.3,  // Further reduced quality for smaller file size
+                            quality: 0.3,  // Reduced quality for smaller file size
                             base64: true,
-                            maxWidth: 800, // Reduced width
-                            maxHeight: 800, // Reduced height
                         });
                         handleImageResult(result);
                     }
@@ -221,13 +199,11 @@ const Create = () => {
                             }
                         }
                         const result = await ImagePicker.launchImageLibraryAsync({
-                            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                            mediaTypes: ['images'],
                             allowsEditing: true,
                             aspect: [4, 3],
                             quality: 0.3,
                             base64: true,
-                            maxWidth: 800,
-                            maxHeight: 800,
                         });
                         handleImageResult(result);
                     }
@@ -316,7 +292,7 @@ const Create = () => {
                                     <Image 
                                         source={{ uri: image }} 
                                         style={{ width: '100%', height: 180, borderRadius: 8 }}
-                                        resizeMode="cover"
+                                        contentFit="cover"
                                     />
                                 ) : (
                                     <View className='flex-col justify-center items-center w-full'>
@@ -334,7 +310,7 @@ const Create = () => {
                             <View className='flex-row items-center bg-gray-200 rounded-md'>
 
                                 <TextInput
-                                    placeholder='Write yout Experience or thought about a car ...'
+                                    placeholder='Write your Experience or thought about a car ...'
                                     value={caption}
                                     onChangeText={setCaption}
                                     className='flex-1 wrapper p-4'
@@ -366,5 +342,3 @@ const Create = () => {
 }
 
 export default Create;
-
-const styles = StyleSheet.create({})

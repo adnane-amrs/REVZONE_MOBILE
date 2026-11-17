@@ -16,7 +16,7 @@ const RootLayout = () => {
             setIsReady(true);
         };
         initialize();
-    }, []);
+    }, [checkAuth]);
 
     useEffect(() => {
         if (!isReady) return;
@@ -26,7 +26,6 @@ const RootLayout = () => {
 
         // Get the current location (e.g., '(auth)', '(tabs)', '(admin)')
         const inAuthGroup = segments[0] === '(auth)';
-        const inTabsGroup = segments[0] === '(tabs)';
         const inAdminGroup = segments[0] === '(admin)';
         const isAtRoot = segments.length === 0 || segments[0] === 'index';
         

@@ -2,11 +2,8 @@ import { Tabs } from 'expo-router';
 import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors as AppColors } from '../../constants/Colors';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const TabsLayout = () => {
-    const insets = useSafeAreaInsets();
-
     return (
         <Tabs 
             screenOptions={{

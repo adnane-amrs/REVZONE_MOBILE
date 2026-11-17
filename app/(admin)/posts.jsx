@@ -16,9 +16,8 @@ const PostManagement = () => {
     const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
-        console.log('Status filter changed:', statusFilter);
         getPosts(currentPage, 10, searchQuery, statusFilter);
-    }, [currentPage, searchQuery, statusFilter]);
+    }, [getPosts, currentPage, searchQuery, statusFilter]);
 
     // New: handle status update with feedback and refresh
     const handleUpdateStatus = async (postId, status) => {

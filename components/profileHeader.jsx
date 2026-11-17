@@ -4,28 +4,11 @@ import { formatMemberSince } from '../lib/utils';
 import { useAuthStore } from '../store/authStore';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
 
 const ProfileHeader = ({ user, imageError, defaultAvatar, onImageError }) => {
-
-
-    const { logout, token } = useAuthStore();
+    const { logout } = useAuthStore();
     const router = useRouter();
-    const insets = useSafeAreaInsets();
-    const [loading, setLoading] = useState(true)
-    const [refreshing, setRefreshing] = useState(false)
-    const [posts, setPosts] = useState([]);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
-
-    // Debug logging
-    console.log('User data in ProfileHeader:', {
-        username: user?.username,
-        email: user?.email,
-        createdAt: user?.createdAt,
-        createdAtType: typeof user?.createdAt,
-        formattedDate: formatMemberSince(user?.createdAt)
-    });
 
     const handleLogout = async () => {
         try {

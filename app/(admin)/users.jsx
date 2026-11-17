@@ -3,17 +3,17 @@ import { View, Text, FlatList, TouchableOpacity, TextInput, Alert } from 'react-
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAdminStore } from '../../store/adminStore';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../../constants/Colors';
 
 const UserManagement = () => {
     const { users, pagination, getUsers, updateUserStatus, updateUserRole, isLoading } = useAdminStore();
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
-    const [roleFilter, setRoleFilter] = useState('');
+    const [roleFilter] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         loadUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage, searchQuery, statusFilter, roleFilter]);
 
     const loadUsers = async () => {

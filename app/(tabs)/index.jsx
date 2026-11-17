@@ -2,12 +2,9 @@ import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
-    ScrollView,
     TouchableOpacity,
-    SafeAreaView,
     Image,
     FlatList,
-    Share,
     ActivityIndicator,
     RefreshControl,
     TextInput,
@@ -23,7 +20,6 @@ import Loader from '../../components/Loader';
 
 const SocialFeed = () => {
     const insets = useSafeAreaInsets();
-    const { user } = useAuthStore();
     const {token} = useAuthStore()
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true)
@@ -109,6 +105,7 @@ const SocialFeed = () => {
 
     useEffect(() => {
         fetchPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const handleLoadMore = async () => {

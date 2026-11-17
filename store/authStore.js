@@ -98,7 +98,7 @@ export const useAuthStore = create((set) => ({
             }
 
             set({token, user});
-        } catch (error) {
+        } catch {
             set({token: null, user: null});
         }
     },

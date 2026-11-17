@@ -1,16 +1,14 @@
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, Alert, RefreshControl, Image, SafeAreaView } from 'react-native'
+import { Text, View, TouchableOpacity, FlatList, Alert, RefreshControl, Image, SafeAreaView } from 'react-native'
 import { useAuthStore } from '../../store/authStore';
-import { useRouter } from 'expo-router';
+import { useRouter , useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState, useCallback } from 'react';
-import { formatMemberSince } from '../../lib/utils';
 import { API_URL } from '../../constants/api';
 import ProfileHeader from '../../components/profileHeader';
-import Spacer from '../../components/Spacer';
-import { Colors } from '../../constants/Colors';
+
 import * as ScreenCapture from 'expo-screen-capture';
-import { useFocusEffect } from 'expo-router';
+
 
 const Profile = () => {
     const { user, token, logout } = useAuthStore();
@@ -41,6 +39,7 @@ const Profile = () => {
             return;
         }
         fetchPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, token]);
 
     useFocusEffect(
@@ -109,16 +108,6 @@ const Profile = () => {
             console.error('Error refreshing:', error);
         } finally {
             setRefreshing(false);
-        }
-    };
-
-    const handleLogout = async () => {
-        try {
-            await logout();
-            router.replace('/(auth)/login');
-        } catch (error) {
-            console.error('Logout error:', error);
-            Alert.alert('Error', 'Failed to logout. Please try again.');
         }
     };
 
@@ -325,5 +314,3 @@ const Profile = () => {
 }
 
 export default Profile
-
-const styles = StyleSheet.create({})

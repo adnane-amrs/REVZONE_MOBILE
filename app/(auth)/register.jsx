@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, Text, View, SafeAreaView, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Image} from 'react-native';
+import { TextInput, Text, View, SafeAreaView, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Image} from 'react-native';
 import Spacer from '../../components/Spacer'
 import { Link, useRouter } from "expo-router"
 import { useState } from 'react'
@@ -16,7 +16,7 @@ const Register = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     
     
-    const {user, isLoading, register, token} = useAuthStore();
+    const {isLoading, register} = useAuthStore();
     const router = useRouter();
 
     
@@ -191,15 +191,3 @@ const Register = () => {
     )
 }
 export default Register
-
-const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-    },
-    input: {
-        height: 55,
-        width: '90%',
-        padding: 15, // internal spacing (inside the input)         
-        marginBottom: 10, // external spacing (outside the input)
-    },
-});

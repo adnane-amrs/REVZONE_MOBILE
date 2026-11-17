@@ -1,24 +1,24 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../store/authStore';
 import { useAdminStore } from '../../store/adminStore';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
-import { useRouter } from 'expo-router';
+import { useRouter , useFocusEffect } from 'expo-router';
 import * as ScreenCapture from 'expo-screen-capture';
-import { useFocusEffect } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+
 
 const AdminDashboard = () => {
     const router = useRouter();
     const { user, logout } = useAuthStore();
-    const { userStats, getUserStats, postStats, getPostStats, isLoading } = useAdminStore();
-    const [selectedPeriod, setSelectedPeriod] = useState('week');
+    const { userStats, getUserStats, postStats, getPostStats } = useAdminStore();
 
     useEffect(() => {
         getUserStats();
         getPostStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useFocusEffect(
