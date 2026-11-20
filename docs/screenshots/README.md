@@ -1,18 +1,37 @@
 # Screenshots
 
-The main README displays these files. Use portrait phone screenshots, PNG, the same device for all.
+Portrait phone screenshots (PNG), all from the same device. File names used by the main README:
+
+**Renter side**
 
 | File | Screen |
 |---|---|
-| `welcome.png` | Welcome screen (`app/index.jsx`) |
-| `login.png` | Login, with the fingerprint button visible |
-| `register.png` | Register |
-| `feed.png` | Home feed with 1–2 posts |
-| `comments.png` | A post with the comments section open |
-| `create-post.png` | Create post, with a photo, title and rating filled in |
-| `profile.png` | Profile with your posts |
-| `admin-dashboard.png` | Admin dashboard (stats) |
-| `admin-users.png` | Admin user management list |
+| `welcome.png` | Welcome screen |
+| `login.png` | Login (with the fingerprint button) |
+| `explore.png` | Explore: search bar, quick filters, car cards |
+| `filters.png` | Filter sheet open |
+| `car-details.png` | Car details: photo gallery, specs, owner |
+| `book.png` | Booking: calendar with a selected range and the price summary |
+| `trips.png` | Trips list |
+| `chat.png` | Chat with an owner |
+| `review.png` | Review screen with stars |
 
-Note: the profile and admin dashboard screens block screenshots on purpose (`expo-screen-capture`).
+**Owner side**
+
+| File | Screen |
+|---|---|
+| `hosting.png` | Hosting dashboard (earnings, requests) |
+| `my-cars.png` | My cars |
+| `list-car.png` | "List your car" form (photos step) |
+| `availability.png` | Availability calendar |
+| `request.png` | Booking request with Accept / Decline |
+
+**Admin**
+
+| File | Screen |
+|---|---|
+| `admin-dashboard.png` | Admin dashboard |
+| `admin-licenses.png` | Driver license review queue |
+
+Note: Profile, the driver license screen and the admin area block screenshots on purpose (`expo-screen-capture`).
 On Android they come out black. That's the security feature working, not a bug.

@@ -1,23 +1,11 @@
 import { Stack } from 'expo-router';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import SafeScreen from '../../components/SafeScreen';
-import { StatusBar } from 'expo-status-bar';
-import "../globals.css";
+import { theme } from '../../constants/theme';
 
-const AuthLayout = () => {
-    return (
-        <SafeAreaProvider>
-            <SafeScreen>
-                <Stack screenOptions={{
-                    headerShown: false,
-                }}>
-                    <Stack.Screen name='login' options={{ title: 'Login' }} />
-                    <Stack.Screen name='register' options={{ title: 'Register' }} />
-                </Stack>
-            </SafeScreen>
-            <StatusBar style='dark' />
-        </SafeAreaProvider>
-    )
-}
+const AuthLayout = () => (
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.canvas }, animation: 'slide_from_right' }}>
+        <Stack.Screen name='login' />
+        <Stack.Screen name='register' />
+    </Stack>
+);
 
-export default AuthLayout
+export default AuthLayout;

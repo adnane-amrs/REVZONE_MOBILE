@@ -1,182 +1,127 @@
-import { Link, useRouter } from "expo-router";
-import { TextInput, Text, View, SafeAreaView, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Image} from 'react-native';
 import { useState, useEffect } from 'react';
-import Spacer from "../../components/Spacer";
-import {Ionicons} from '@expo/vector-icons'
-import { useAuthStore } from '../../store/authStore';
-import { Colors } from "../../constants/Colors";
+import { View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Text from '../../components/ui/AppText';
+import Button from '../../components/ui/Button';
+import TextField from '../../components/ui/TextField';
+import PressableScale from '../../components/ui/PressableScale';
+import AuthLayout from '../../components/auth/AuthLayout';
+import { useAuthStore } from '../../store/authStore';
+import { toast } from '../../store/toastStore';
+import { theme } from '../../constants/theme';
+import { dialog } from '../../store/dialogStore';
 
-export default function Login(){
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [showPassword, setShowPassword] = useState(false)
-    const [isBiometricSupported, setIsBiometricSupported] = useState(false)
-    const {isLoading, login} = useAuthStore();
-    const router = useRouter();
-    
+const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+export default function Login() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [errors, setErrors] = useState({});
+    const [isBiometricSupported, setIsBiometricSupported] = useState(false);
+    const { isLoading, login } = useAuthStore();
+
     useEffect(() => {
         (async () => {
             const compatible = await LocalAuthentication.hasHardwareAsync();
-            setIsBiometricSupported(compatible);
+            const enrolled = compatible && await LocalAuthentication.isEnrolledAsync();
+            setIsBiometricSupported(!!enrolled);
         })();
     }, []);
 
+    const validate = () => {
+        const next = {};
+        if (!email.trim()) next.email = 'Enter your email';
+        else if (!EMAIL_RE.test(email.trim())) next.email = 'Please enter a valid email address';
+        if (!password) next.password = 'Enter your password';
+        else if (password.length < 6) next.password = 'Password must contain at least 6 characters';
+        setErrors(next);
+        return Object.keys(next).length === 0;
+    };
+
     const handleLogin = async () => {
-        // Validation des champs vides
-        if (!email.trim() || !password.trim()) {
-            Alert.alert("Error", "Please fill in all fields");
-            return;
-        }
-
-        // Validation du format email
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if (!emailRegex.test(email)) {
-            Alert.alert("Error", "Please enter a valid email address");
-            return;
-        }
-
-        // Validation de la longueur du mot de passe
-        if (password.length < 6) {
-            Alert.alert("Error", "Password must contain at least 6 characters");
-            return;
-        }
-
-        const result = await login(email, password);
-        if(!result.success) {
-            Alert.alert("Error", result.error);
+        if (!validate()) return;
+        const result = await login(email.trim(), password);
+        if (!result.success) {
+            dialog.alert("Login failed", result.error);
         } else {
-            await AsyncStorage.setItem('userCredentials', JSON.stringify({ email, password }));
-            router.replace("/(tabs)/profile");
+            await AsyncStorage.setItem('userCredentials', JSON.stringify({ email: email.trim(), password }));
+            toast.success('Welcome back!');
         }
-    }
+    };
 
     const handleBiometricAuth = async () => {
         try {
             const savedCredentials = await AsyncStorage.getItem('userCredentials');
             if (!savedCredentials) {
-                Alert.alert('No saved credentials', 'Please login with email and password first');
+                dialog.alert('No saved login', 'Log in once with your email and password to enable fingerprint login.');
                 return;
             }
-
-            const { email, password } = JSON.parse(savedCredentials);
-            
             const result = await LocalAuthentication.authenticateAsync({
-                promptMessage: 'Authenticate to login',
+                promptMessage: 'Log in to RevZone',
                 fallbackLabel: 'Use password',
                 disableDeviceFallback: false,
             });
-
             if (result.success) {
-                const loginResult = await login(email, password);
-                if (loginResult.success) {
-                    await AsyncStorage.setItem('userCredentials', JSON.stringify({ email, password }));
-                    router.replace("/(tabs)/profile");
-                } else {
-                    Alert.alert("Error", loginResult.error);
-                }
+                const { email: savedEmail, password: savedPassword } = JSON.parse(savedCredentials);
+                const loginResult = await login(savedEmail, savedPassword);
+                if (!loginResult.success) dialog.alert("Login failed", loginResult.error);
+                else toast.success('Welcome back!');
             }
         } catch {
-            Alert.alert('Error', 'Biometric authentication failed');
+            dialog.alert('Error', 'Biometric authentication failed');
         }
     };
 
     return (
-        <SafeAreaView className='flex-1 justify-center bg-white'>
-            <KeyboardAvoidingView behavior={Platform.OS === 'android' ? 'padding' : 'height'} 
-            className='flex-1 justify-center'>
-                {/* Logo image */}
-                <View className='items-center'>
-                    <Image 
-                        source={require('../../assets/images/REVZONE.png')} // Adjust the path as necessary
-                        alt='RevZone Logo'
-                        width={20}
-                        height={20} 
-                        className='w-64 h-52 bg-transparent' // Adjust size as needed
-                    />
-                    <Text className='font-bold text-4xl'>Sign In Your Account</Text>
-                    <Text className='text-gray-600 leading-5 px-10 text-center text-lg'>Log in to your account</Text>
+        <AuthLayout active="login" title="Welcome Back!" subtitle="Rent cars from local owners, or manage your own listings, anytime.">
+            <Animated.View entering={FadeInDown.delay(100).duration(500)} style={{ gap: 14 }}>
+                <TextField
+                    label="Email address"
+                    icon="mail-outline"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChangeText={(v) => { setEmail(v); if (errors.email) setErrors(e => ({ ...e, email: null })); }}
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    keyboardType="email-address"
+                    error={errors.email}
+                />
+                <TextField
+                    label="Password"
+                    icon="lock-closed-outline"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChangeText={(v) => { setPassword(v); if (errors.password) setErrors(e => ({ ...e, password: null })); }}
+                    secure
+                    autoComplete="password"
+                    error={errors.password}
+                    onSubmitEditing={handleLogin}
+                />
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(200).duration(500)} style={{ flexDirection: 'row', gap: 12, alignItems: 'center', marginTop: 4 }}>
+                <View style={{ flex: 1 }}>
+                    <Button title="Log In" size="lg" loading={isLoading} onPress={handleLogin} />
                 </View>
-                <Spacer height={30}/>
+                {isBiometricSupported ? (
+                    <PressableScale
+                        onPress={handleBiometricAuth}
+                        haptic
+                        accessibilityLabel="Log in with fingerprint"
+                        style={{ width: 58, height: 58, borderRadius: 29, backgroundColor: theme.surface2, alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        <Ionicons name="finger-print" size={28} color={theme.text} />
+                    </PressableScale>
+                ) : null}
+            </Animated.View>
 
-                <View className='items-center'>
-
-                    <View className='w-[90%]'>
-                        <View className='flex-row items-center bg-gray-200 rounded-md py-1'>
-                            <Ionicons name="mail-outline" size={24} color="#4042e2" style={{ marginLeft: 10 }} />
-                            <TextInput 
-                                className='p-4 flex-1' 
-                                placeholder='Enter your Email' 
-                                onChangeText={setEmail} 
-                                value={email} 
-                            />
-                        </View>
-                    </View>
-
-                    <View className='w-[90%] mt-5'>
-                        <View className='flex-row items-center bg-gray-200 rounded-md py-1'>
-                            <Ionicons name="lock-closed-outline" size={24} color="#4042e2" style={{ marginLeft: 10 }} />
-                            <TextInput 
-                                className='p-4 flex-1' 
-                                placeholder='Enter your Password'
-                                onChangeText={setPassword}
-                                secureTextEntry={!showPassword}
-                                value={password}
-                            />
-                            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className="mr-4">
-                                <Ionicons name={!showPassword ? 'eye-off' : 'eye'} size={24} color="#4042e2" />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                </View>
-
-                <View className="items-end mr-6">
-                    <Text className=" text-primary1 font-semibold">Forgot password?</Text>
-                </View>
-
-                <TouchableOpacity  className="items-center " disabled={isLoading} onPress={handleLogin} >
-                {isLoading ? (
-                    <View className="bg-primary1 text-xl font-bold text-white px-5 py-[12px] w-[90%] text-center m-2 rounded-md">
-                        <ActivityIndicator color={Colors.secondary2} />
-                    </View>
-                ) : (
-                    <View className="bg-primary1 text-xl font-bold text-white px-5 py-[12px] w-[90%] text-center m-2 rounded-md">
-                        <View className='flex-row items-center justify-center'>
-                            <Ionicons name='log-in-outline' size={24} color={Colors.secondary2} />
-                            <Text className='text-white text-center text-lg font-bold'>  Login</Text>
-                        </View>
-                    </View>
-                )}
-                </TouchableOpacity>
-
-                <View className="flex-row gap-2 justify-center items-center">
-                    <Text className='text-lg'>Do not Have an Account?</Text>
-                    <Link href='./register' asChild>
-                        <TouchableOpacity>
-                            <Text className='underline text-primary1 font-bold'>Sign Up</Text>
-                        </TouchableOpacity>
-                    </Link>
-                </View>
-                
-                {isBiometricSupported && (
-                    <View className="items-center mt-2">
-                        <TouchableOpacity 
-                            onPress={handleBiometricAuth}
-                            className="px-4 py-[12px] rounded-md flex-row items-center justify-center w-fit"
-                        >
-                            <Ionicons name="finger-print" size={70} color="#0E2148" />
-                            
-                        </TouchableOpacity>
-                    </View>
-                )}
-                
-            </KeyboardAvoidingView>
-            {/* Footer */}
-            <View className='items-center mb-2'>
-                <Text className='text-gray-500'>{'\u00A9'}Copyright, All Rights Reserved</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center', marginTop: 4 }}>
+                <Ionicons name="shield-checkmark-outline" size={14} color={theme.muted} />
+                <Text style={{ color: theme.muted, fontSize: 12 }}>Your session is protected with secure tokens</Text>
             </View>
-        </SafeAreaView>
-    )
+        </AuthLayout>
+    );
 }

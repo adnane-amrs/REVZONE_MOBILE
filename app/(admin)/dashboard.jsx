@@ -1,188 +1,118 @@
-import React, { useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCallback, useState } from 'react';
+import { View, ScrollView, RefreshControl } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import * as ScreenCapture from 'expo-screen-capture';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import Text from '../../components/ui/AppText';
+import IconButton from '../../components/ui/IconButton';
+import PressableScale from '../../components/ui/PressableScale';
 import { useAuthStore } from '../../store/authStore';
 import { useAdminStore } from '../../store/adminStore';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../../constants/Colors';
-import { useRouter , useFocusEffect } from 'expo-router';
-import * as ScreenCapture from 'expo-screen-capture';
+import { theme } from '../../constants/theme';
+import { dialog } from '../../store/dialogStore';
 
+const StatTile = ({ icon, label, value, color, index }) => (
+    <Animated.View entering={FadeInDown.delay(index * 50).duration(400)} style={{ width: '48%' }}>
+        <View style={{ backgroundColor: theme.paper, borderRadius: 26, padding: 16, gap: 12, borderWidth: 1, borderColor: theme.line }}>
+            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: `${color}22`, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name={icon} size={20} color={color} />
+            </View>
+            <View>
+                <Text weight="extrabold" style={{ color: theme.text, fontSize: 26 }}>{value ?? 0}</Text>
+                <Text style={{ color: theme.muted, fontSize: 12 }}>{label}</Text>
+            </View>
+        </View>
+    </Animated.View>
+);
 
+const ActionRow = ({ icon, title, subtitle, onPress, badge, highlight }) => (
+    <PressableScale onPress={onPress} scaleTo={0.98} accessibilityLabel={title}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: highlight ? theme.accent : theme.paper, borderRadius: 26, padding: 14, borderWidth: highlight ? 0 : 1, borderColor: theme.line }}>
+        <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: theme.iconBg, alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name={icon} size={21} color={theme.iconFg} />
+        </View>
+        <View style={{ flex: 1 }}>
+            <Text weight="bold" style={{ color: highlight ? theme.onAccent : theme.text, fontSize: 15 }}>{title}</Text>
+            <Text style={{ color: highlight ? theme.onAccentMuted : theme.muted, fontSize: 12 }}>{subtitle}</Text>
+        </View>
+        {badge ? (
+            <View style={{ minWidth: 26, height: 26, borderRadius: 13, paddingHorizontal: 7, backgroundColor: highlight ? theme.paper : theme.accent, alignItems: 'center', justifyContent: 'center' }}>
+                <Text weight="bold" style={{ color: highlight ? theme.accentDeep : theme.onAccent, fontSize: 12 }}>{badge}</Text>
+            </View>
+        ) : null}
+        <Ionicons name="chevron-forward" size={18} color={highlight ? theme.onAccent : theme.muted} />
+    </PressableScale>
+);
 
-const AdminDashboard = () => {
+export default function AdminDashboard() {
     const router = useRouter();
+    const insets = useSafeAreaInsets();
     const { user, logout } = useAuthStore();
-    const { userStats, getUserStats, postStats, getPostStats } = useAdminStore();
+    const { userStats, getUserStats, listingStats, getListingStats } = useAdminStore();
+    const [refreshing, setRefreshing] = useState(false);
 
-    useEffect(() => {
-        getUserStats();
-        getPostStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const load = useCallback(() => Promise.all([getUserStats(), getListingStats()]), [getUserStats, getListingStats]);
 
-    useFocusEffect(
-        useCallback(() => {
-            // Block screenshots and screen recording
-            ScreenCapture.preventScreenCaptureAsync();
-            return () => {
-                // Allow screenshots again when leaving the page
-                ScreenCapture.allowScreenCaptureAsync();
-            };
-        }, [])
-    );
+    useFocusEffect(useCallback(() => {
+        load();
+        // Admin data: block screenshots and screen recording
+        ScreenCapture.preventScreenCaptureAsync().catch(() => {});
+        return () => { ScreenCapture.allowScreenCaptureAsync().catch(() => {}); };
+    }, [load]));
 
     const handleLogout = () => {
-        Alert.alert(
-            "Logout",
-            "Are you sure you want to logout?",
-            [
-                { text: "Cancel", style: "cancel" },
-                { text: "Logout", onPress: logout, style: "destructive" }
-            ]
-        );
+        dialog.alert("Log out", "Are you sure you want to log out?", [
+            { text: "Cancel", style: "cancel" },
+            { text: "Log out", onPress: logout, style: "destructive" },
+        ], { icon: 'log-out-outline' });
     };
 
-    const StatCard = ({ title, value, icon, color, onPress }) => (
-        <TouchableOpacity 
-            onPress={onPress}
-            className="bg-white rounded-lg p-4 shadow-sm border border-gray-200"
-        >
-            <View className="flex-row items-center justify-between">
-                <View>
-                    <Text className="text-gray-600 text-sm font-medium">{title}</Text>
-                    <Text className="text-2xl font-bold text-gray-900 mt-1">{value}</Text>
-                </View>
-                <View className={`w-12 h-12 rounded-full ${color} items-center justify-center`}>
-                    <Ionicons name={icon} size={24} color="white" />
-                </View>
-            </View>
-        </TouchableOpacity>
-    );
+    const tiles = [
+        { icon: 'people-outline', label: 'Users', value: userStats.totalUsers, color: theme.info },
+        { icon: 'checkmark-circle-outline', label: 'Active users', value: userStats.activeUsers, color: theme.success },
+        { icon: 'pause-circle-outline', label: 'Suspended', value: userStats.suspendedUsers, color: theme.warning },
+        { icon: 'close-circle-outline', label: 'Banned', value: userStats.bannedUsers, color: theme.danger },
+        { icon: 'car-sport-outline', label: 'Live listings', value: listingStats.visibleListings, color: theme.accentDeep },
+        { icon: 'eye-off-outline', label: 'Hidden listings', value: listingStats.hiddenListings, color: theme.muted },
+        { icon: 'calendar-outline', label: 'Active bookings', value: listingStats.activeBookings, color: theme.info },
+        { icon: 'flag-outline', label: 'Completed trips', value: listingStats.completedBookings, color: theme.success },
+    ];
 
     return (
-        <SafeAreaView className="flex-1 bg-gray-100" >
-            {/* Header */}
-            <View className="bg-dark px-4 py-3 border-b text-white border-gray-200">
-                <View className="flex-row items-center justify-between">
-                    <View>
-                        <Text className="text-xl font-bold text-white">Admin Dashboard</Text>
-                        <Text className="text-white">Welcome back, {user?.username}</Text>
-                    </View>
-                    <TouchableOpacity onPress={handleLogout}>
-                        <Ionicons name="log-out-outline" size={24} color={'#ffffff'} />
-                    </TouchableOpacity>
+        <ScrollView
+            style={{ flex: 1, backgroundColor: theme.canvas }}
+            contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: insets.bottom + 30, gap: 20 }}
+            refreshControl={<RefreshControl refreshing={refreshing} tintColor={theme.accentDeep} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}
+        >
+            <Animated.View entering={FadeInDown.duration(400)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flex: 1 }}>
+                    <Text style={{ color: theme.muted, fontSize: 14 }}>Admin · {user?.username}</Text>
+                    <Text weight="extrabold" style={{ color: theme.text, fontSize: 28 }}>Dashboard</Text>
                 </View>
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                    <IconButton icon="car-sport-outline" variant="accent" onPress={() => router.push('/explore')} accessibilityLabel="Open the rental app" />
+                    <IconButton icon="log-out-outline" variant="white" onPress={handleLogout} accessibilityLabel="Log out" />
+                </View>
+            </Animated.View>
+
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 12 }}>
+                {tiles.map((t, i) => <StatTile key={t.label} {...t} index={i} />)}
             </View>
 
-            <ScrollView className="flex-1 px-4 py-4">
-                {/* Quick Stats */}
-                <View className="mb-6">
-                    <Text className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</Text>
-                    <View className="space-y-4">
-                        <View className="flex-row justify-between">
-                            <View className="flex-1 mr-2 bg-blue-100 rounded-lg p-4 items-center">
-                                <Ionicons name="people-outline" size={28} color="#2563eb" />
-                                <Text className="text-xs text-blue-800 mt-2">Total Users</Text>
-                                <Text className="text-2xl font-bold text-blue-900 mt-1">{userStats.totalUsers ?? 0}</Text>
-                            </View>
-                            <View className="flex-1 mx-1 bg-green-100 rounded-lg p-4 items-center">
-                                <Ionicons name="checkmark-circle-outline" size={28} color="#16a34a" />
-                                <Text className="text-xs text-green-800 mt-2">Active</Text>
-                                <Text className="text-2xl font-bold text-green-900 mt-1">{userStats.activeUsers ?? 0}</Text>
-                            </View>
-                            <View className="flex-1 mx-1 bg-yellow-100 rounded-lg p-4 items-center">
-                                <Ionicons name="pause-circle-outline" size={28} color="#eab308" />
-                                <Text className="text-xs text-yellow-800 mt-2">Suspended</Text>
-                                <Text className="text-2xl font-bold text-yellow-900 mt-1">{userStats.suspendedUsers ?? 0}</Text>
-                            </View>
-                            <View className="flex-1 ml-2 bg-red-100 rounded-lg p-4 items-center">
-                                <Ionicons name="close-circle-outline" size={28} color="#dc2626" />
-                                <Text className="text-xs text-red-800 mt-2">Banned</Text>
-                                <Text className="text-2xl font-bold text-red-900 mt-1">{userStats.bannedUsers ?? 0}</Text>
-                            </View>
-                        </View>
-                    </View>
-                </View>
+            <View style={{ gap: 10 }}>
+                <Text weight="bold" style={{ color: theme.text, fontSize: 19 }}>Moderation</Text>
+                <ActionRow icon="id-card-outline" title="Driver licenses" subtitle="Approve or reject uploaded licenses"
+                    badge={userStats.pendingLicenses || null} highlight={userStats.pendingLicenses > 0} onPress={() => router.push('/(admin)/licenses')} />
+                <ActionRow icon="people-outline" title="Manage users" subtitle={`${userStats.newUsersThisWeek || 0} new this week`} onPress={() => router.push('/(admin)/users')} />
+                <ActionRow icon="car-outline" title="Manage listings" subtitle={`${listingStats.newListingsThisWeek || 0} new this week · ${listingStats.pausedListings || 0} paused`} onPress={() => router.push('/(admin)/listings')} />
+            </View>
 
-                {/* Recent Activity */}
-                <View className="mb-6">
-                    <Text className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</Text>
-                    <View className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-                        <View className="flex-row items-center justify-between mb-3">
-                            <Text className="text-gray-600">New Users This Week</Text>
-                            <Text className="text-lg font-bold text-blue-600">
-                                {userStats.newUsersThisWeek || 0}
-                            </Text>
-                        </View>
-                        <View className="flex-row items-center justify-between">
-                            <Text className="text-gray-600">New Users This Month</Text>
-                            <Text className="text-lg font-bold text-blue-600">
-                                {userStats.newUsersThisMonth || 0}
-                            </Text>
-                        </View>
-                    </View>
-                </View>
-
-                {/* Post Stats */}
-                <View className="mb-6">
-                    <Text className="text-lg font-semibold text-gray-900 mb-4">Post Stats</Text>
-                    <View className="space-y-4">
-                        <StatCard
-                            title="Total Posts"
-                            value={postStats.totalPosts || 0}
-                            icon="car-sport-outline"
-                            color="bg-purple-500"
-                        />
-                        <StatCard
-                            title="New Posts This Week"
-                            value={postStats.newPostsThisWeek || 0}
-                            icon="newspaper-outline"
-                            color="bg-teal-500"
-                        />
-                    </View>
-                </View>
-
-                {/* Quick Actions */}
-                <View className="mb-6">
-                    <Text className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</Text>
-                    <View className="space-y-4">
-                        <TouchableOpacity
-                            onPress={() => router.push('/(admin)/users')}
-                            className="bg-white rounded-lg p-4 shadow-sm border border-gray-100"
-                        >
-                            <View className="flex-row items-center">
-                                <Ionicons name="people-outline" size={24} color={Colors.primary} />
-                                <Text className="ml-3 text-gray-900 font-medium">Manage Users</Text>
-                                <Ionicons name="chevron-forward" size={20} color={Colors.primary} className="ml-auto" />
-                            </View>
-                        </TouchableOpacity>
-                        
-                        <TouchableOpacity
-                            onPress={() => router.push('/(admin)/posts')}
-                            className="bg-white rounded-lg p-4 shadow-sm border border-gray-100"
-                        >
-                            <View className="flex-row items-center">
-                                <Ionicons name="car-outline" size={24} color={Colors.primary} />
-                                <Text className="ml-3 text-gray-900 font-medium">Manage Posts</Text>
-                                <Ionicons name="chevron-forward" size={20} color={Colors.primary} className="ml-auto" />
-                            </View>
-                        </TouchableOpacity>
-                        
-                        <TouchableOpacity
-                            className="bg-white rounded-lg p-4 shadow-sm border border-gray-100"
-                        >
-                            <View className="flex-row items-center">
-                                <Ionicons name="analytics-outline" size={24} color={Colors.primary} />
-                                <Text className="ml-3 text-gray-900 font-medium">View Analytics</Text>
-                                <Ionicons name="chevron-forward" size={20} color={Colors.primary} className="ml-auto" />
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </ScrollView>
-        </SafeAreaView>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 }}>
+                <Ionicons name="eye-off-outline" size={13} color={theme.muted} />
+                <Text style={{ color: theme.muted, fontSize: 11 }}>Screenshots are disabled in the admin area</Text>
+            </View>
+        </ScrollView>
     );
-};
-
-export default AdminDashboard; 
+}

@@ -1,8 +1,9 @@
+// Kept for older screens; new code uses constants/theme.js
 export const Colors = {
-    primary1: "#4042e2",
-    primary2: "#7d96f5",
-    dark: "#0E2148",
-    secondary1: "#91b3fa",
-    secondary2: "#e8eefd",
-    warning: "#cc475a",
+    primary1: "#D4F34A",
+    primary2: "#F1FBCB",
+    dark: "#0E0E10",
+    secondary1: "#879195",
+    secondary2: "#F2F4F5",
+    warning: "#E5484D",
 }

@@ -7,4 +7,10 @@ module.exports = defineConfig([
   {
     ignores: ['dist/*'],
   },
+  {
+    // Fail when a file imports a name another file doesn't export (it would render `undefined` and crash)
+    rules: {
+      'import/named': 'error',
+    },
+  },
 ]);
